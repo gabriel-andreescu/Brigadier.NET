@@ -4,7 +4,7 @@
 public class CommandSyntaxException : Exception
 {
 	public static readonly int ContextAmount = 10;
-	public static readonly IBuiltInExceptionProvider BuiltInExceptions = new BuiltInExceptions();
+	public static IBuiltInExceptionProvider BuiltInExceptions = new BuiltInExceptions();
 
 	private readonly IMessage _message;
 
