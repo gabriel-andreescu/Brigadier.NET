@@ -7,13 +7,15 @@ public class EnumArgumentType<T> : IArgumentType<T> where T : struct, Enum
 {
 	public T Parse(IStringReader reader)
 	{
+		var start = reader.Cursor;
 		var input = reader.ReadUnquotedString();
 		if (Enum.TryParse<T>(input, ignoreCase: true, out var level))
 		{
 			return level;
 		}
 
-		throw CommandSyntaxException.BuiltInExceptions.LiteralIncorrect().Create(input);
+		reader.Cursor = start;
+		throw CommandSyntaxException.BuiltInExceptions.EnumInvalid().CreateWithContext(reader, input, Enum.GetNames(typeof(T)));
 	}
 
 	public IEnumerable<string> Examples => Enum.GetNames(typeof(T));
