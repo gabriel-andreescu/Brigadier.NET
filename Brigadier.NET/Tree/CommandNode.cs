@@ -24,6 +24,8 @@ public abstract class CommandNode<TSource> : IComparable<CommandNode<TSource>>, 
 
 	public Command<TSource>? Command { get; set; }
 
+	public IMessage? Description { get; set; }
+
 	//PortNote: ICollection might be needed
 	public ICollection<CommandNode<TSource>> Children => _children.Values;
 
@@ -77,6 +79,11 @@ public abstract class CommandNode<TSource> : IComparable<CommandNode<TSource>>, 
 			if (node.Command != null)
 			{
 				child.Command = node.Command;
+			}
+
+			if (node.Description != null)
+			{
+				child.Description = node.Description;
 			}
 
 			foreach (var grandchild in node.Children)

@@ -87,4 +87,14 @@ public class ArgumentCommandNodeTest : AbstractCommandNodeTest {
 		builder.Requirement.Should().Be(_node.Requirement);
 		builder.Command.Should().Be(_node.Command);
 	}
+
+	[Fact]
+	public void TestCreateBuilderKeepsDescription()
+	{
+		var node = RequiredArgumentBuilder<object, int>.RequiredArgument("foo", Arguments.Integer()).Describes("A number of foos.").Build();
+
+		var builder = (RequiredArgumentBuilder<object, int>)node.CreateBuilder();
+
+		builder.Description!.String.Should().Be("A number of foos.");
+	}
 }

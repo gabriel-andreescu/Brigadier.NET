@@ -72,6 +72,11 @@ public class ArgumentCommandNode<TSource, T> : ArgumentCommandNode<TSource>, IEq
 			builder.Executes(Command);
 		}
 
+		if (Description != null)
+		{
+			builder.Describes(Description);
+		}
+
 		return builder;
 	}
 

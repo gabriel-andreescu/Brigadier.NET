@@ -55,6 +55,26 @@ public abstract class AbstractCommandNodeTest {
 	}
 
 	[Fact]
+	public void TestAddChildPreservesDescription(){
+		var node = GetCommandNode();
+
+		node.AddChild(LiteralArgumentBuilder<object>.LiteralArgument("child").Describes("A child.").Build());
+		node.AddChild(LiteralArgumentBuilder<object>.LiteralArgument("child").Build());
+
+		node.Children.First().Description!.String.Should().Be("A child.");
+	}
+
+	[Fact]
+	public void TestAddChildOverwritesDescription(){
+		var node = GetCommandNode();
+
+		node.AddChild(LiteralArgumentBuilder<object>.LiteralArgument("child").Build());
+		node.AddChild(LiteralArgumentBuilder<object>.LiteralArgument("child").Describes("A child.").Build());
+
+		node.Children.First().Description!.String.Should().Be("A child.");
+	}
+
+	[Fact]
 	public void TestAddChildOverwritesCommand(){
 		var node = GetCommandNode();
 

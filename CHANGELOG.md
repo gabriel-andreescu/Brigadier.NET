@@ -4,6 +4,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Command nodes can carry a description, set with `Describes` on their builder. A literal's
+  suggestion carries its node's description as its tooltip.
+
 ### Changed
 
 - `CommandSyntaxException.BuiltInExceptions` can be replaced, as in Mojang's Brigadier, so

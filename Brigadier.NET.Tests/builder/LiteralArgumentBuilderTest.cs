@@ -25,6 +25,13 @@ public class LiteralArgumentBuilderTest {
 	}
 
 	[Fact]
+	public void TestBuildWithDescription(){
+		var node = _builder.Describes("Says foo.").Build();
+
+		node.Description!.String.Should().Be("Says foo.");
+	}
+
+	[Fact]
 	public void TestBuildWithExecutor(){
 		var node = _builder.Executes(_command).Build();
 

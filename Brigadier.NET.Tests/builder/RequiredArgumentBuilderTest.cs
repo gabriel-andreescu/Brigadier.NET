@@ -28,6 +28,13 @@ public class RequiredArgumentBuilderTest {
 	}
 
 	[Fact]
+	public void TestBuildWithDescription(){
+		var node = _builder.Describes("A number of foos.").Build();
+
+		node.Description!.String.Should().Be("A number of foos.");
+	}
+
+	[Fact]
 	public void TestBuildWithExecutor(){
 		var node = _builder.Executes(_command).Build();
 

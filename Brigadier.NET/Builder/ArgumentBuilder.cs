@@ -58,6 +58,19 @@ public abstract class ArgumentBuilder<TSource, TThis, TNode> : IArgumentBuilder<
 
 	public Command<TSource>? Command { get; private set; }
 
+	public TThis Describes(IMessage description)
+	{
+		Description = description;
+		return This;
+	}
+
+	public TThis Describes(string description)
+	{
+		return Describes(new LiteralMessage(description));
+	}
+
+	public IMessage? Description { get; private set; }
+
 	public TThis Requires(Predicate<TSource> requirement)
 	{
 		Requirement = requirement;

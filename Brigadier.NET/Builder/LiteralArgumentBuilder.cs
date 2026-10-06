@@ -28,7 +28,10 @@ public class LiteralArgumentBuilder<TSource> : ArgumentBuilder<TSource, LiteralA
 
 	public override LiteralCommandNode<TSource> Build()
 	{
-		var result = new LiteralCommandNode<TSource>(Literal, Command, Requirement, RedirectTarget, RedirectModifier, IsFork);
+		var result = new LiteralCommandNode<TSource>(Literal, Command, Requirement, RedirectTarget, RedirectModifier, IsFork)
+		{
+			Description = Description
+		};
 
 		foreach (var argument in Arguments)
 		{

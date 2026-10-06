@@ -43,7 +43,10 @@ public class RequiredArgumentBuilder<TSource, T> : ArgumentBuilder<TSource, Requ
 
 	public override ArgumentCommandNode<TSource, T> Build()
 	{
-		var result = new ArgumentCommandNode<TSource, T>(Name, Type, Command, Requirement, RedirectTarget, RedirectModifier, IsFork, _suggestionsProvider);
+		var result = new ArgumentCommandNode<TSource, T>(Name, Type, Command, Requirement, RedirectTarget, RedirectModifier, IsFork, _suggestionsProvider)
+		{
+			Description = Description
+		};
 
 		foreach (var argument in Arguments)
 		{

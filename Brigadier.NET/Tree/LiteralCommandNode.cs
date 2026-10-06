@@ -61,7 +61,7 @@ public class LiteralCommandNode<TSource> : CommandNode<TSource>, IEquatable<Lite
 	{
 		if (Literal.ToLower().StartsWith(builder.RemainingLowerCase))
 		{
-			return builder.Suggest(Literal).BuildAsync();
+			return (Description == null ? builder.Suggest(Literal) : builder.Suggest(Literal, Description)).BuildAsync();
 		}
 		else
 		{
@@ -104,6 +104,11 @@ public class LiteralCommandNode<TSource> : CommandNode<TSource>, IEquatable<Lite
 		if (Command != null)
 		{
 			builder.Executes(Command);
+		}
+
+		if (Description != null)
+		{
+			builder.Describes(Description);
 		}
 
 		return builder;

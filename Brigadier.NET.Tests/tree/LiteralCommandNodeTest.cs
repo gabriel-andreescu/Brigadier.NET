@@ -107,6 +107,25 @@ public class LiteralCommandNodeTest : AbstractCommandNodeTest {
 	}
 
 	[Fact]
+	public async Task TestSuggestionCarriesDescription(){
+		var node = LiteralArgumentBuilder<object>.LiteralArgument("foo").Describes("Says foo.").Build();
+
+		var suggestions = await node.ListSuggestions(_contextBuilder.Build(""), new SuggestionsBuilder("", 0));
+
+		suggestions.List.Should().ContainSingle().Which.Tooltip!.String.Should().Be("Says foo.");
+	}
+
+	[Fact]
+	public void TestCreateBuilderKeepsDescription()
+	{
+		var node = LiteralArgumentBuilder<object>.LiteralArgument("foo").Describes("Says foo.").Build();
+
+		var builder = (LiteralArgumentBuilder<object>)node.CreateBuilder();
+
+		builder.Description!.String.Should().Be("Says foo.");
+	}
+
+	[Fact]
 	public void TestCreateBuilder()
 	{
 		var builder = (LiteralArgumentBuilder<object>)_node.CreateBuilder();
