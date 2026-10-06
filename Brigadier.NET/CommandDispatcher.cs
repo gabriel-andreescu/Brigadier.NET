@@ -299,7 +299,7 @@ public class CommandDispatcher<TSource>
 				}
 				catch (Exception ex)
 				{
-					throw CommandSyntaxException.BuiltInExceptions.DispatcherParseException().CreateWithContext(reader, ex.Message);
+					throw CommandSyntaxException.BuiltInExceptions.DispatcherParseException().CreateWithContext(reader, ex.Message, ex);
 				}
 
 				if (reader.CanRead())

@@ -20,5 +20,10 @@ public class DynamicCommandExceptionType : ICommandExceptionType
 		return new CommandSyntaxException(this, _function(a), reader.String, reader.Cursor);
 	}
 
+	public CommandSyntaxException CreateWithContext(IImmutableStringReader reader, object a, Exception innerException)
+	{
+		return new CommandSyntaxException(this, _function(a), reader.String, reader.Cursor, innerException);
+	}
+
 	public delegate IMessage Function(object a);
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Brigadier.NET.ArgumentTypes;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 using Brigadier.NET.Exceptions;
@@ -65,6 +66,17 @@ public class CommandDispatcherTest
 		_subject.Execute("base bar", _source).Should().Be(42);
 
 		_command.Received(2).Invoke(Arg.Any<CommandContext<object>>());
+	}
+
+	[Fact]
+	public void TestExecuteArgumentParseFailureKeepsCause()
+	{
+		var failure = new InvalidOperationException("broken");
+		_subject.Register(r => r.Literal("foo").Then(r.Argument("bar", new ThrowingArgumentType(failure)).Executes(_command)));
+
+		_subject.Invoking(s => s.Execute("foo 1", _source)).Should().Throw<CommandSyntaxException>()
+			.Where(ex => ex.Type == CommandSyntaxException.BuiltInExceptions.DispatcherParseException())
+			.Where(ex => ex.InnerException == failure);
 	}
 
 	[Fact]
@@ -585,5 +597,10 @@ public class CommandDispatcherTest
 		_consumer.Received(1).Invoke(Arg.Is<CommandContext<object>>(c => ReferenceEquals(c.Source, rejectedSource)), false, 0);
 		_consumer.Received(1).Invoke(Arg.Is<CommandContext<object>>(c => ReferenceEquals(c.Source, _source)), true, 3);
 		_consumer.Received(1).Invoke(Arg.Is<CommandContext<object>>(c => ReferenceEquals(c.Source, otherSource)), true, 3);
+	}
+
+	private sealed class ThrowingArgumentType(Exception failure) : IArgumentType<int>
+	{
+		public int Parse(IStringReader reader) => throw failure;
 	}
 }

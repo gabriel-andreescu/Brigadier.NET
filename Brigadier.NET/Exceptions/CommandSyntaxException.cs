@@ -17,8 +17,13 @@ public class CommandSyntaxException : Exception
 		Cursor = -1;
 	}
 
-	public CommandSyntaxException(ICommandExceptionType type, IMessage message, string input, int cursor) 
-		: base(message.String, null)
+	public CommandSyntaxException(ICommandExceptionType type, IMessage message, string input, int cursor)
+		: this(type, message, input, cursor, null)
+	{
+	}
+
+	public CommandSyntaxException(ICommandExceptionType type, IMessage message, string input, int cursor, Exception? innerException)
+		: base(message.String, innerException)
 	{
 		Type = type;
 		_message = message;
