@@ -18,6 +18,8 @@ public interface IBuiltInExceptionProvider
 
 	Dynamic2CommandExceptionType LongTooHigh();
 
+	Dynamic2CommandExceptionType EnumInvalid();
+
 	DynamicCommandExceptionType LiteralIncorrect();
 
 	SimpleCommandExceptionType ReaderExpectedStartOfQuote();

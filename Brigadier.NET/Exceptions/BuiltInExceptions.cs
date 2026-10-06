@@ -15,6 +15,8 @@ public class BuiltInExceptions : IBuiltInExceptionProvider
 	private static readonly Dynamic2CommandExceptionType LONG_TOO_SMALL = new((found, min) => new LiteralMessage($"Long must not be less than {min}, found {found}"));
 	private static readonly Dynamic2CommandExceptionType LONG_TOO_BIG = new((found, max) => new LiteralMessage($"Long must not be more than {max}, found {found}"));
 
+	private static readonly Dynamic2CommandExceptionType ENUM_INVALID = new((found, values) => new LiteralMessage($"Invalid value '{found}', expected one of {string.Join(", ", (IEnumerable<string>)values)}"));
+
 	private static readonly DynamicCommandExceptionType LITERAL_INCORRECT = new(expected => new LiteralMessage($"Expected literal {expected}"));
 
 	private static readonly SimpleCommandExceptionType READER_EXPECTED_START_OF_QUOTE = new(new LiteralMessage("Expected quote to start a string"));
@@ -75,6 +77,11 @@ public class BuiltInExceptions : IBuiltInExceptionProvider
 	public Dynamic2CommandExceptionType LongTooHigh()
 	{
 		return LONG_TOO_BIG;
+	}
+
+	public Dynamic2CommandExceptionType EnumInvalid()
+	{
+		return ENUM_INVALID;
 	}
 
 	public DynamicCommandExceptionType LiteralIncorrect()
