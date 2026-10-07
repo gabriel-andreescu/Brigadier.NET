@@ -7,21 +7,27 @@ using Brigadier.NET.Builder;
 using Brigadier.NET.Exceptions;
 using Brigadier.NET.ArgumentTypes;
 using static Brigadier.NET.Arguments;
+using Brigadier.NET.VerifyNativeAOT;
 using Spectre.Console;
 
 AnsiConsole.MarkupLine("[green]Brigadier.NET VerifyNativeAOT - Filesystem Browser (Brigadier commands)[/]");
 AnsiConsole.MarkupLine("Type commands like: [yellow]ls All .[/], [yellow]cd ..[/], [yellow]readfile file.txt[/]. Type [yellow]help[/] or [yellow]exit[/].");
 
 var source = new ConsoleSource();
-var dispatcher = BuildDispatcher();
+CommandDispatcher<ConsoleSource> dispatcher = BuildDispatcher();
 
 while (true)
 {
-    var input = AnsiConsole.Ask<string>("[blue]cmd[/]:");
+    string input = AnsiConsole.Ask<string>("[blue]cmd[/]:");
     if (string.IsNullOrWhiteSpace(input))
+    {
         continue;
+    }
+
     if (string.Equals(input.Trim(), "exit", StringComparison.OrdinalIgnoreCase))
+    {
         break;
+    }
 
     try
     {
@@ -59,15 +65,15 @@ CommandDispatcher<ConsoleSource> BuildDispatcher()
             .Then(ctx.Argument("path", String())
                 .Executes(c =>
                 {
-                    var type = c.GetArgument<EntryType>("type");
-                    var path = GetString(c, "path");
-                    var resolved = ResolvePath(path, c.Source.CurrentDirectory);
+                    EntryType type = c.GetArgument<EntryType>("type");
+                    string path = GetString(c, "path");
+                    string resolved = ResolvePath(path, c.Source.CurrentDirectory);
                     ListDirectory(resolved, type);
                     return 1;
                 }))
             .Executes(c =>
             {
-                var type = c.GetArgument<EntryType>("type");
+                EntryType type = c.GetArgument<EntryType>("type");
                 ListDirectory(c.Source.CurrentDirectory, type);
                 return 1;
             })));
@@ -78,8 +84,8 @@ CommandDispatcher<ConsoleSource> BuildDispatcher()
         .Then(ctx.Argument("path", GreedyString())
             .Executes(c =>
             {
-                var path = GetString(c, "path");
-                var resolved = ResolvePath(path, c.Source.CurrentDirectory);
+                string path = GetString(c, "path");
+                string resolved = ResolvePath(path, c.Source.CurrentDirectory);
                 if (!Directory.Exists(resolved))
                 {
                     AnsiConsole.MarkupLine("[yellow]Directory not found.[/]");
@@ -96,8 +102,8 @@ CommandDispatcher<ConsoleSource> BuildDispatcher()
         .Then(ctx.Argument("path", GreedyString())
             .Executes(c =>
             {
-                var path = GetString(c, "path");
-                var resolved = ResolvePath(path, c.Source.CurrentDirectory);
+                string path = GetString(c, "path");
+                string resolved = ResolvePath(path, c.Source.CurrentDirectory);
                 if (!File.Exists(resolved))
                 {
                     AnsiConsole.MarkupLine("[yellow]File not found.[/]");
@@ -111,10 +117,13 @@ CommandDispatcher<ConsoleSource> BuildDispatcher()
         .Literal("help")
         .Executes(c =>
         {
-            var usages = d.GetAllUsage(d.Root, c.Source, true);
+            string[] usages = d.GetAllUsage(d.Root, c.Source, true);
             AnsiConsole.MarkupLine("[green]Available commands:[/]");
-            foreach (var u in usages.Distinct().OrderBy(s => s))
+            foreach (string? u in usages.Distinct().OrderBy(s => s))
+            {
                 AnsiConsole.MarkupLine("  " + u);
+            }
+
             AnsiConsole.MarkupLine("Special: exit");
             return usages.Length;
         }));
@@ -136,11 +145,13 @@ CommandDispatcher<ConsoleSource> BuildDispatcher()
 static string ResolvePath(string input, string cwd)
 {
     if (string.IsNullOrWhiteSpace(input))
-        return cwd;
-
-    if (input.StartsWith("~"))
     {
-        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        return cwd;
+    }
+
+    if (input.StartsWith('~'))
+    {
+        string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         input = Path.Combine(home, input[1..]);
     }
 
@@ -151,10 +162,10 @@ static void ListDirectory(string path, EntryType type)
 {
     try
     {
-        var dirs = Directory.EnumerateDirectories(path).Select(x => new FileSystemEntry(x, true));
-        var files = Directory.EnumerateFiles(path).Select(x => new FileSystemEntry(x, false));
+        IEnumerable<FileSystemEntry> dirs = Directory.EnumerateDirectories(path).Select(x => new FileSystemEntry(x, true));
+        IEnumerable<FileSystemEntry> files = Directory.EnumerateFiles(path).Select(x => new FileSystemEntry(x, false));
 
-        var entries = type switch
+        IEnumerable<FileSystemEntry> entries = type switch
         {
             EntryType.Directory => dirs,
             EntryType.File => files,
@@ -167,7 +178,7 @@ static void ListDirectory(string path, EntryType type)
         table.AddColumn("Size");
         table.AddColumn("Modified");
 
-        foreach (var e in entries.OrderByDescending(e => e.IsDirectory).ThenBy(e => e.Name, StringComparer.OrdinalIgnoreCase))
+        foreach (FileSystemEntry? e in entries.OrderByDescending(e => e.IsDirectory).ThenBy(e => e.Name, StringComparer.OrdinalIgnoreCase))
         {
             table.AddRow(
                 MarkupEscaped(e.Name),
@@ -206,25 +217,32 @@ static void ShowFilePreview(string file)
 
 static string MarkupEscaped(string text)
 {
-    if (text == null) return string.Empty;
+    if (text == null)
+    {
+        return string.Empty;
+    }
+
     return text.Replace("[", "[[").Replace("]", "]]" );
 }
 
-record FileSystemEntry(string Path, bool IsDirectory)
+namespace Brigadier.NET.VerifyNativeAOT
 {
-    public string Name => System.IO.Path.GetFileName(Path) ?? Path;
-    public long Size => IsDirectory ? 0 : new FileInfo(Path).Length;
-    public DateTime Modified => IsDirectory ? Directory.GetLastWriteTimeUtc(Path) : File.GetLastWriteTimeUtc(Path);
-}
+    sealed record FileSystemEntry(string Path, bool IsDirectory)
+    {
+        public string Name => System.IO.Path.GetFileName(Path) ?? Path;
+        public long Size => IsDirectory ? 0 : new FileInfo(Path).Length;
+        public DateTime Modified => IsDirectory ? Directory.GetLastWriteTimeUtc(Path) : File.GetLastWriteTimeUtc(Path);
+    }
 
-public class ConsoleSource
-{
-    public string CurrentDirectory { get; set; } = Directory.GetCurrentDirectory();
-}
+    public class ConsoleSource
+    {
+        public string CurrentDirectory { get; set; } = Directory.GetCurrentDirectory();
+    }
 
-public enum EntryType
-{
-    All,
-    Directory,
-    File
+    public enum EntryType
+    {
+        All,
+        Directory,
+        File
+    }
 }

@@ -6,13 +6,15 @@ using BenchmarkDotNet.Attributes;
 using Brigadier.NET;
 using Brigadier.NET.Builder;
 
+namespace Brigadier.NET.Benchmarks;
+
 [MarkdownExporterAttribute.GitHub]
 [MemoryDiagnoser]
 public class ExecuteBenchmarks {
-    private CommandDispatcher<object> dispatcher;
-    private ParseResults<object> simple;
-    private ParseResults<object> singleRedirect;
-    private ParseResults<object> forkedRedirect;
+    private CommandDispatcher<object> dispatcher = null!;
+    private ParseResults<object> simple = null!;
+    private ParseResults<object> singleRedirect = null!;
+    private ParseResults<object> forkedRedirect = null!;
 
     [GlobalSetup]
     public void setup() {
@@ -26,17 +28,17 @@ public class ExecuteBenchmarks {
     }
 
     [Benchmark]
-    public void execute_simple() {
+    public void executeSimple() {
         dispatcher.Execute(simple);
     }
 
 	[Benchmark]
-    public void execute_single_redirect() {
+    public void executeSingleRedirect() {
         dispatcher.Execute(singleRedirect);
     }
 
 	[Benchmark]
-    public void execute_forked_redirect() {
+    public void executeForkedRedirect() {
         dispatcher.Execute(forkedRedirect);
     }
 }

@@ -3,7 +3,7 @@
 namespace Brigadier.NET.Suggestion;
 
 [PublicAPI]
-public class Suggestion : IComparable<Suggestion>, IEquatable<Suggestion>
+public class Suggestion : IEquatable<Suggestion>
 {
 	public Suggestion(StringRange range, string text, IMessage? tooltip = null)
 	{
@@ -27,30 +27,46 @@ public class Suggestion : IComparable<Suggestion>, IEquatable<Suggestion>
 		var result = new StringBuilder();
 		if (Range.Start > 0)
 		{
-			result.Append(input.Substring(0, Range.Start));
+			result.Append(input, 0, Range.Start);
 		}
 		result.Append(Text);
 		if (Range.End < input.Length)
 		{
-			result.Append(input.Substring(Range.End));
+			result.Append(input, Range.End, input.Length - Range.End);
 		}
 		return result.ToString();
 	}
 
 	public override bool Equals(object? obj)
 	{
-		if (ReferenceEquals(null, obj)) return false;
-		if (ReferenceEquals(this, obj)) return true;
-		return obj is Suggestion other 
+		if (ReferenceEquals(null, obj))
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, obj))
+        {
+            return true;
+        }
+
+        return obj is Suggestion other 
 		       && Equals(other);
 	}
 
 	public bool Equals(Suggestion? other)
 	{
-		if (ReferenceEquals(null, other)) return false;
-		if (ReferenceEquals(this, other)) return true;
-		return Equals(Range, other.Range) 
-		       && string.Equals(Text, other.Text) 
+		if (ReferenceEquals(null, other))
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
+        return Equals(Range, other.Range) 
+		       && string.Equals(Text, other.Text, StringComparison.Ordinal)
 		       && Equals(Tooltip, other.Tooltip);
 	}
 
@@ -84,12 +100,12 @@ public class Suggestion : IComparable<Suggestion>, IEquatable<Suggestion>
 		var result = new StringBuilder();
 		if (range.Start < Range.Start)
 		{
-			result.Append(command.Substring(range.Start, Range.Start - range.Start));
+			result.Append(command, range.Start, Range.Start - range.Start);
 		}
 		result.Append(Text);
 		if (range.End > Range.End)
 		{
-			result.Append(command.Substring(Range.End, range.End - Range.End));
+			result.Append(command, Range.End, range.End - Range.End);
 		}
 		return new Suggestion(range, result.ToString(), Tooltip);
 	}

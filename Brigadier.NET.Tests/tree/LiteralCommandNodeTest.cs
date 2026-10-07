@@ -24,7 +24,7 @@ public class LiteralCommandNodeTest : AbstractCommandNodeTest {
 
 	public LiteralCommandNodeTest()
 	{
-		_node = LiteralArgumentBuilder<object>.LiteralArgument("foo").Build();
+		_node = new LiteralArgumentBuilder<object>("foo").Build();
 		_contextBuilder = new CommandContextBuilder<object>(new CommandDispatcher<object>(), new object(), new RootCommandNode<object>(), 0);
 	}
 
@@ -68,49 +68,48 @@ public class LiteralCommandNodeTest : AbstractCommandNodeTest {
 
 	[Fact]
 	public async Task TestSuggestions(){
-		var empty = await _node.ListSuggestions(_contextBuilder.Build(""), new SuggestionsBuilder("", 0));
+        Suggestions empty = await _node.ListSuggestions(_contextBuilder.Build(""), new SuggestionsBuilder("", 0));
 		empty.List.Should().BeEquivalentTo(new List<Suggestion.Suggestion> { new Suggestion.Suggestion(StringRange.At(0), "foo") });
 
-		var foo = await _node.ListSuggestions(_contextBuilder.Build("foo"), new SuggestionsBuilder("foo", 0));
+        Suggestions foo = await _node.ListSuggestions(_contextBuilder.Build("foo"), new SuggestionsBuilder("foo", 0));
 		foo.IsEmpty().Should().Be(true);
 
-		var food = await _node.ListSuggestions(_contextBuilder.Build("food"), new SuggestionsBuilder("food", 0));
+        Suggestions food = await _node.ListSuggestions(_contextBuilder.Build("food"), new SuggestionsBuilder("food", 0));
 		food.IsEmpty().Should().Be(true);
 
-		var b = await _node.ListSuggestions(_contextBuilder.Build("b"), new SuggestionsBuilder("b", 0));
+        Suggestions b = await _node.ListSuggestions(_contextBuilder.Build("b"), new SuggestionsBuilder("b", 0));
 		b.IsEmpty().Should().Be(true);
 	}
 
 	[Fact]
 	public void TestEquals()
 	{
-		var command = Substitute.For<Command<object>>();
+        Command<object> command = Substitute.For<Command<object>>();
 
 		new EqualsTester()
 			.AddEqualityGroup(
-				LiteralArgumentBuilder<object>.LiteralArgument("foo").Build(),
-				LiteralArgumentBuilder<object>.LiteralArgument("foo").Build()
+				new LiteralArgumentBuilder<object>("foo").Build(),
+				new LiteralArgumentBuilder<object>("foo").Build()
 			)
 			.AddEqualityGroup(
-				LiteralArgumentBuilder<object>.LiteralArgument("bar").Executes(command).Build(),
-				LiteralArgumentBuilder<object>.LiteralArgument("bar").Executes(command).Build()
+				new LiteralArgumentBuilder<object>("bar").Executes(command).Build(),
+				new LiteralArgumentBuilder<object>("bar").Executes(command).Build()
 			)
 			.AddEqualityGroup(
-				LiteralArgumentBuilder<object>.LiteralArgument("bar").Build(),
-				LiteralArgumentBuilder<object>.LiteralArgument("bar").Build()
+				new LiteralArgumentBuilder<object>("bar").Build(),
+				new LiteralArgumentBuilder<object>("bar").Build()
 			)
 			.AddEqualityGroup(
-				LiteralArgumentBuilder<object>.LiteralArgument("foo").Then(LiteralArgumentBuilder<object>.LiteralArgument("bar")).Build(),
-				LiteralArgumentBuilder<object>.LiteralArgument("foo").Then(LiteralArgumentBuilder<object>.LiteralArgument("bar")).Build()
-			)
-			.TestEquals();
+				new LiteralArgumentBuilder<object>("foo").Then(new LiteralArgumentBuilder<object>("bar")).Build(),
+				new LiteralArgumentBuilder<object>("foo").Then(new LiteralArgumentBuilder<object>("bar")).Build()
+			);
 	}
 
 	[Fact]
 	public async Task TestSuggestionCarriesDescription(){
-		var node = LiteralArgumentBuilder<object>.LiteralArgument("foo").Describes("Says foo.").Build();
+        LiteralCommandNode<object> node = new LiteralArgumentBuilder<object>("foo").Describes("Says foo.").Build();
 
-		var suggestions = await node.ListSuggestions(_contextBuilder.Build(""), new SuggestionsBuilder("", 0));
+        Suggestions suggestions = await node.ListSuggestions(_contextBuilder.Build(""), new SuggestionsBuilder("", 0));
 
 		suggestions.List.Should().ContainSingle().Which.Tooltip!.String.Should().Be("Says foo.");
 	}
@@ -118,7 +117,7 @@ public class LiteralCommandNodeTest : AbstractCommandNodeTest {
 	[Fact]
 	public void TestCreateBuilderKeepsDescription()
 	{
-		var node = LiteralArgumentBuilder<object>.LiteralArgument("foo").Describes("Says foo.").Build();
+        LiteralCommandNode<object> node = new LiteralArgumentBuilder<object>("foo").Describes("Says foo.").Build();
 
 		var builder = (LiteralArgumentBuilder<object>)node.CreateBuilder();
 

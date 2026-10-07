@@ -2,7 +2,7 @@
 
 namespace Brigadier.NET.Benchmarks;
 
-class Program
+internal static class Program
 {
 	static void Main(string[] args)
 	{

@@ -17,7 +17,7 @@ public class IntegerArgumentTypeTest {
 	}
 
 	[Fact]
-	public void parse_tooSmall(){
+	public void parseTooSmall(){
 		var reader = new StringReader("-5");
 		Integer(0, 100).Invoking(l => l.Parse(reader))
 			.Should().Throw<CommandSyntaxException>()
@@ -26,7 +26,7 @@ public class IntegerArgumentTypeTest {
 	}
 
 	[Fact]
-	public void parse_tooBig(){
+	public void parseTooBig(){
 		var reader = new StringReader("5");
 		Integer(-100, 0).Invoking(l => l.Parse(reader))
 			.Should().Throw<CommandSyntaxException>()
@@ -40,8 +40,7 @@ public class IntegerArgumentTypeTest {
 			.AddEqualityGroup(Integer(), Integer())
 			.AddEqualityGroup(Integer(-100, 100), Integer(-100, 100))
 			.AddEqualityGroup(Integer(-100, 50), Integer(-100, 50))
-			.AddEqualityGroup(Integer(-50, 100), Integer(-50, 100))
-			.TestEquals();
+			.AddEqualityGroup(Integer(-50, 100), Integer(-50, 100));
 	}
 
 	[Fact]

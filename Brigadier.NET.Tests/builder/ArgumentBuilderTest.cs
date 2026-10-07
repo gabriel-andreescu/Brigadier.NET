@@ -21,7 +21,7 @@ public class ArgumentBuilderTest {
 	[Fact]
 	public void TestArguments()
 	{
-		var argument = RequiredArgumentBuilder<object, int>.RequiredArgument("bar", Arguments.Integer());
+		var argument = new RequiredArgumentBuilder<object, int>("bar", Arguments.Integer());
 
 		_builder.Then(argument);
 
@@ -31,30 +31,30 @@ public class ArgumentBuilderTest {
 
 	[Fact]
 	public void TestRedirect(){
-		var target = Substitute.For<CommandNode<object>>(null, null, null, null, false);
+        CommandNode<object> target = Substitute.For<CommandNode<object>>(null, null, null, null, false);
 		_builder.Redirect(target);
 		_builder.RedirectTarget.Should().Be(target);
 	}
 
 	[Fact]
-	public void testRedirect_withChild(){
-		var target = Substitute.For<CommandNode<object>>(null, null, null, null, false);
+	public void testRedirectWithChild(){
+        CommandNode<object> target = Substitute.For<CommandNode<object>>(null, null, null, null, false);
 		_builder.Then(r => r.Literal("foot"));
 		_builder.Invoking(b => b.Redirect(target))
 			.Should().Throw<InvalidOperationException>();
 	}
 
 	[Fact]
-	public void testThen_withRedirect()
+	public void testThenWithRedirect()
 	{
-		var target = Substitute.For<CommandNode<object>>(null, null, null, null, false);
+        CommandNode<object> target = Substitute.For<CommandNode<object>>(null, null, null, null, false);
 
 		_builder.Redirect(target);
 		_builder.Invoking(b => b.Then(r => r.Literal("foot")))
 			.Should().Throw<InvalidOperationException>();
 	}
 
-	internal class TestableArgumentBuilder<TSource> : ArgumentBuilder<TSource, TestableArgumentBuilder<TSource>, CommandNode<TSource>> {
+	internal sealed class TestableArgumentBuilder<TSource> : ArgumentBuilder<TSource, TestableArgumentBuilder<TSource>, CommandNode<TSource>> {
 		public override CommandNode<TSource> Build()
 		{
 			throw new NotImplementedException();

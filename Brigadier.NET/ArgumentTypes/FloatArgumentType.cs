@@ -19,8 +19,8 @@ public class FloatArgumentType : IArgumentType<float>
 	/// <exception cref="CommandSyntaxException"></exception>
 	public float Parse(IStringReader reader)
 	{
-		var start = reader.Cursor;
-		var result = reader.ReadFloat();
+        int start = reader.Cursor;
+        float result = reader.ReadFloat();
 		if (result < Minimum) {
 			reader.Cursor = start;
 			throw CommandSyntaxException.BuiltInExceptions.FloatTooLow().CreateWithContext(reader, result, Minimum);
@@ -36,12 +36,19 @@ public class FloatArgumentType : IArgumentType<float>
 
 
 	[SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
-	public override bool Equals(object? o)
+	public override bool Equals(object? obj)
 	{
-		if (this == o) return true;
-		if (o is not FloatArgumentType that) return false;
+		if (this == obj)
+        {
+            return true;
+        }
 
-		return Maximum == that.Maximum && Minimum == that.Minimum;
+        if (obj is not FloatArgumentType that)
+        {
+            return false;
+        }
+
+        return Maximum == that.Maximum && Minimum == that.Minimum;
 	}
 
 	public override int GetHashCode()

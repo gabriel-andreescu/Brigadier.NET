@@ -524,17 +524,17 @@ namespace JetBrains.Annotations
 	///   public SummaryData() { }
 	/// }
 	/// 
-	/// [UsedImplicitly(ImplicitUseTargetFlags.WithInheritors | ImplicitUseTargetFlags.Default)]
+	/// [UsedImplicitly(ImplicitUseTargetFlags.WithInheritors | ImplicitUseTargetFlags.Itself)]
 	/// public interface IService { }
 	/// </code></example>
 	[AttributeUsage(AttributeTargets.All)]
 	internal sealed class UsedImplicitlyAttribute : Attribute
 	{
 		public UsedImplicitlyAttribute()
-		  : this(ImplicitUseKindFlags.Default, ImplicitUseTargetFlags.Default) { }
+		  : this(ImplicitUseKindFlags.Default, ImplicitUseTargetFlags.Itself) { }
 
 		public UsedImplicitlyAttribute(ImplicitUseKindFlags useKindFlags)
-		  : this(useKindFlags, ImplicitUseTargetFlags.Default) { }
+		  : this(useKindFlags, ImplicitUseTargetFlags.Itself) { }
 
 		public UsedImplicitlyAttribute(ImplicitUseTargetFlags targetFlags)
 		  : this(ImplicitUseKindFlags.Default, targetFlags) { }
@@ -562,10 +562,10 @@ namespace JetBrains.Annotations
 	internal sealed class MeansImplicitUseAttribute : Attribute
 	{
 		public MeansImplicitUseAttribute()
-		  : this(ImplicitUseKindFlags.Default, ImplicitUseTargetFlags.Default) { }
+		  : this(ImplicitUseKindFlags.Default, ImplicitUseTargetFlags.Itself) { }
 
 		public MeansImplicitUseAttribute(ImplicitUseKindFlags useKindFlags)
-		  : this(useKindFlags, ImplicitUseTargetFlags.Default) { }
+		  : this(useKindFlags, ImplicitUseTargetFlags.Itself) { }
 
 		public MeansImplicitUseAttribute(ImplicitUseTargetFlags targetFlags)
 		  : this(ImplicitUseKindFlags.Default, targetFlags) { }
@@ -613,8 +613,6 @@ namespace JetBrains.Annotations
 	[Flags]
 	internal enum ImplicitUseTargetFlags
 	{
-		Default = Itself,
-
 		/// <summary>Code entity itself.</summary>
 		Itself = 1,
 

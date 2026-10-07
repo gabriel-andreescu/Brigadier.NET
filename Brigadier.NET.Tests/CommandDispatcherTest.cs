@@ -5,6 +5,7 @@ using Brigadier.NET.ArgumentTypes;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 using Brigadier.NET.Exceptions;
+using Brigadier.NET.Tree;
 using FluentAssertions;
 using NSubstitute;
 using Xunit;
@@ -146,7 +147,7 @@ public class CommandDispatcherTest
 	[Fact]
 	public void TestExecuteSubCommand()
 	{
-		var subCommand = Substitute.For<Command<object>>();
+        Command<object> subCommand = Substitute.For<Command<object>>();
 		subCommand.Invoke(Arg.Any<CommandContext<object>>()).Returns(100);
 
 		_subject.Register(r => 
@@ -166,7 +167,7 @@ public class CommandDispatcherTest
 	{
 		_subject.Register(r => r.Literal("foo").Then(r.Literal("bar").Executes(_command)));
 
-		var parse = _subject.Parse("foo ", _source);
+        ParseResults<object> parse = _subject.Parse("foo ", _source);
 		parse.Reader.Remaining.Should().BeEquivalentTo(" ");
 		parse.Context.Nodes.Count.Should().Be(1);
 	}
@@ -177,7 +178,7 @@ public class CommandDispatcherTest
 	{
 		_subject.Register(r => r.Literal("foo").Then(r.Argument("bar", Integer()).Executes(_command)));
 
-		var parse = _subject.Parse("foo ", _source);
+        ParseResults<object> parse = _subject.Parse("foo ", _source);
 		parse.Reader.Remaining.Should().BeEquivalentTo(" ");
 		parse.Context.Nodes.Count.Should().Be(1);
 	}
@@ -185,7 +186,7 @@ public class CommandDispatcherTest
 	[Fact]
 	public void TestExecuteAmbiguousParentSubCommand()
 	{
-		var subCommand = Substitute.For<Command<object>>();
+        Command<object> subCommand = Substitute.For<Command<object>>();
 		subCommand.Invoke(Arg.Any<CommandContext<object>>()).Returns(100);
 
 		_subject.Register(r => 
@@ -209,10 +210,10 @@ public class CommandDispatcherTest
 	[Fact]
 	public void TestExecuteAmbiguousParentSubCommandViaRedirect()
 	{
-		var subCommand = Substitute.For<Command<object>>();
+        Command<object> subCommand = Substitute.For<Command<object>>();
 		subCommand.Invoke(Arg.Any<CommandContext<object>>()).Returns(100);
 
-		var real = _subject.Register(r => 
+        LiteralCommandNode<object> real = _subject.Register(r => 
 			r.Literal("test")
 				.Then(
 					r.Argument("incorrect", Integer())
@@ -238,19 +239,19 @@ public class CommandDispatcherTest
 	[Fact]
 	public void TestExecuteRedirectedMultipleTimes()
 	{
-		var concreteNode = _subject.Register(r => r.Literal("actual").Executes(_command));
-		var redirectNode = _subject.Register(r => r.Literal("redirected").Redirect(_subject.Root));
+        LiteralCommandNode<object> concreteNode = _subject.Register(r => r.Literal("actual").Executes(_command));
+        LiteralCommandNode<object> redirectNode = _subject.Register(r => r.Literal("redirected").Redirect(_subject.Root));
 
-		var input = "redirected redirected actual";
+        string input = "redirected redirected actual";
 
-		var parse = _subject.Parse(input, _source);
+        ParseResults<object> parse = _subject.Parse(input, _source);
 		parse.Context.Range.Get(input).Should().BeEquivalentTo("redirected");
 		parse.Context.Nodes.Count.Should().Be(1);
 		parse.Context.RootNode.Should().Be(_subject.Root);
 		parse.Context.Nodes[0].Range.Should().BeEquivalentTo(parse.Context.Range);
 		parse.Context.Nodes[0].Node.Should().Be(redirectNode);
 
-		var child1 = parse.Context.Child;
+        CommandContextBuilder<object>? child1 = parse.Context.Child;
 		child1.Should().NotBeNull();
 		child1.Range.Get(input).Should().BeEquivalentTo("redirected");
 		child1.Nodes.Count.Should().Be(1);
@@ -258,7 +259,7 @@ public class CommandDispatcherTest
 		child1.Nodes[0].Range.Should().BeEquivalentTo(child1.Range);
 		child1.Nodes[0].Node.Should().Be(redirectNode);
 
-		var child2 = child1.Child;
+        CommandContextBuilder<object>? child2 = child1.Child;
 		child2.Should().NotBeNull();
 		child2.Range.Get(input).Should().BeEquivalentTo("actual");
 		child2.Nodes.Count.Should().Be(1);
@@ -275,12 +276,12 @@ public class CommandDispatcherTest
 	{
 		var subject = new CommandDispatcher<int>();
 
-		var root = subject.Root;
+        RootCommandNode<int> root = subject.Root;
 
-		var add = LiteralArgumentBuilder<int>.LiteralArgument("add");
-		var blank = LiteralArgumentBuilder<int>.LiteralArgument("blank");
-		var addArg = RequiredArgumentBuilder<int, int>.RequiredArgument("value", Integer());
-		var run = LiteralArgumentBuilder<int>.LiteralArgument("run");
+		var add = new LiteralArgumentBuilder<int>("add");
+		var blank = new LiteralArgumentBuilder<int>("blank");
+		var addArg = new RequiredArgumentBuilder<int, int>("value", Integer());
+		var run = new LiteralArgumentBuilder<int>("run");
 
 
 		subject.Register(add.Then(addArg.Redirect(root, c => c.Source + c.GetArgument<int>("value"))));
@@ -302,10 +303,10 @@ public class CommandDispatcherTest
 	public void TestSharedRedirectAndExecuteNodes()
 	{
 		var subject = new CommandDispatcher<int>();
-			
-		var root = subject.Root;
-		var add = LiteralArgumentBuilder<int>.LiteralArgument("add");
-		var addArg = RequiredArgumentBuilder<int, int>.RequiredArgument("value", Integer());
+
+        RootCommandNode<int> root = subject.Root;
+		var add = new LiteralArgumentBuilder<int>("add");
+		var addArg = new RequiredArgumentBuilder<int, int>("value", Integer());
 
 		subject.Register(add.Then(
 			addArg
@@ -320,16 +321,16 @@ public class CommandDispatcherTest
 	[Fact]
 	public void TestExecuteRedirected()
 	{
-		var modifier = Substitute.For<RedirectModifier<object>>();
-		var source1 = new object();
-		var source2 = new object();
+        RedirectModifier<object> modifier = Substitute.For<RedirectModifier<object>>();
+        object source1 = new object();
+        object source2 = new object();
 		modifier.Invoke(Arg.Is<CommandContext<object>>(s => s.Source == _source)).Returns([source1, source2]);
 
-		var concreteNode = _subject.Register(r => r.Literal("actual").Executes(_command));
-		var redirectNode = _subject.Register(r => r.Literal("redirected").Fork(_subject.Root, modifier));
+        LiteralCommandNode<object> concreteNode = _subject.Register(r => r.Literal("actual").Executes(_command));
+        LiteralCommandNode<object> redirectNode = _subject.Register(r => r.Literal("redirected").Fork(_subject.Root, modifier));
 
-		var input = "redirected actual";
-		var parse = _subject.Parse(input, _source);
+        string input = "redirected actual";
+        ParseResults<object> parse = _subject.Parse(input, _source);
 		parse.Context.Range.Get(input).Should().BeEquivalentTo("redirected");
 		parse.Context.Nodes.Count.Should().Be(1);
 		parse.Context.RootNode.Should().BeEquivalentTo(_subject.Root);
@@ -337,7 +338,7 @@ public class CommandDispatcherTest
 		parse.Context.Nodes[0].Node.Should().Be(redirectNode);
 		parse.Context.Source.Should().Be(_source);
 
-		var parent = parse.Context.Child;
+        CommandContextBuilder<object>? parent = parse.Context.Child;
 		parent.Should().NotBeNull();
 		parent.Range.Get(input).Should().BeEquivalentTo("actual");
 		parent.Nodes.Count.Should().Be(1);
@@ -354,7 +355,7 @@ public class CommandDispatcherTest
 	[Fact]
 	public void TestIncompleteRedirectShouldThrow()
 	{
-		var foo = _subject.Register(r => r.Literal("foo")
+        LiteralCommandNode<object> foo = _subject.Register(r => r.Literal("foo")
 			.Then(r.Literal("bar")
 				.Then(r.Argument("value", Integer()).Executes(c => c.GetArgument<int>("value"))))
 			.Then(r.Literal("awa").Executes(_ => 2))
@@ -369,7 +370,7 @@ public class CommandDispatcherTest
 	[Fact]
 	public void TestRedirectModifierEmptyResult()
 	{
-		var foo = _subject.Register(r => r.Literal("foo")
+        LiteralCommandNode<object> foo = _subject.Register(r => r.Literal("foo")
 			.Then(r.Literal("bar")
 				.Then(r.Argument("value", Integer()).Executes(c => c.GetArgument<int>("value"))))
 			.Then(r.Literal("awa").Executes(_ => 2))
@@ -377,7 +378,7 @@ public class CommandDispatcherTest
 		RedirectModifier<object> emptyModifier = _ => Array.Empty<object>();
 		_subject.Register(r => r.Literal("baz").Fork(foo, emptyModifier));
 
-		var result = _subject.Execute("baz bar 100", new object());
+        int result = _subject.Execute("baz bar 100", new object());
 		result.Should().Be(0);
 	}
 
@@ -392,9 +393,9 @@ public class CommandDispatcherTest
 	}
 
 	[Fact]
-	public void testExecute_invalidOther()
+	public void testExecuteInvalidOther()
 	{
-		var wrongCommand = Substitute.For<Command<object>>();
+        Command<object> wrongCommand = Substitute.For<Command<object>>();
 		_subject.Register(r => r.Literal("w").Executes(wrongCommand));
 		_subject.Register(r => r.Literal("world").Executes(_command));
 
@@ -404,7 +405,7 @@ public class CommandDispatcherTest
 	}
 
 	[Fact]
-	public void parse_noSpaceSeparator()
+	public void parseNoSpaceSeparator()
 	{
 		_subject.Register(r => r.Literal("foo").Then(r.Argument("bar", Integer()).Executes(_command)));
 
@@ -428,7 +429,7 @@ public class CommandDispatcherTest
 	[Fact]
 	public void TestGetPath()
 	{
-		var bar = LiteralArgumentBuilder<object>.LiteralArgument("bar").Build();
+        LiteralCommandNode<object> bar = new LiteralArgumentBuilder<object>("bar").Build();
 		_subject.Register(r => r.Literal("foo").Then(bar));
 
 		_subject.GetPath(bar).Should().BeEquivalentTo(new List<string> { "foo", "bar" });
@@ -437,7 +438,7 @@ public class CommandDispatcherTest
 	[Fact]
 	public void TestFindNodeExists()
 	{
-		var bar = LiteralArgumentBuilder<object>.LiteralArgument("bar").Build();
+        LiteralCommandNode<object> bar = new LiteralArgumentBuilder<object>("bar").Build();
 		_subject.Register(r => r.Literal("foo").Then(bar));
 
 		_subject.FindNode(new List<string> { "foo", "bar" }).Should().Be(bar);
@@ -468,7 +469,7 @@ public class CommandDispatcherTest
 		_subject.Consumer = _consumer;
 			
 		_subject.Register(r => r.Literal("foo").Executes(c => (int)c.Source));
-		var contexts = new object[] { 9, 10, 11 };
+        object[] contexts = new object[] { 9, 10, 11 };
 
 		_subject.Register(r => r.Literal("repeat").Fork(_subject.Root, _ => contexts.ToList()));
 
@@ -485,7 +486,7 @@ public class CommandDispatcherTest
 		_subject.Consumer = _consumer;
 		_subject.Register(r => r.Literal("crash").Executes(_command));
 
-		var exception = CommandSyntaxException.BuiltInExceptions.ReaderExpectedBool().Create();
+        CommandSyntaxException exception = CommandSyntaxException.BuiltInExceptions.ReaderExpectedBool().Create();
 		_command.Invoke(Arg.Any<CommandContext<object>>()).Returns(_ => { throw exception; });
 			
 
@@ -500,10 +501,10 @@ public class CommandDispatcherTest
 	public void TestExceptionInNonForkedRedirectedCommand()
 	{
 		var subject = new CommandDispatcher<object>();
-		var consumer = Substitute.For<ResultConsumer<object>>();
+        ResultConsumer<object> consumer = Substitute.For<ResultConsumer<object>>();
 		subject.Consumer = consumer;
-		var command = Substitute.For<Command<object>>();
-		var exception = CommandSyntaxException.BuiltInExceptions.ReaderExpectedBool().Create();
+        Command<object> command = Substitute.For<Command<object>>();
+        CommandSyntaxException exception = CommandSyntaxException.BuiltInExceptions.ReaderExpectedBool().Create();
 		command.Invoke(Arg.Any<CommandContext<object>>()).Returns(_ => { throw exception; });
 		subject.Register(r => r.Literal("crash").Executes(command));
 		subject.Register(r => r.Literal("redirect").Redirect(subject.Root));
@@ -521,7 +522,7 @@ public class CommandDispatcherTest
 		_subject.Register(r => r.Literal("crash").Executes(_command));
 		_subject.Register(r => r.Literal("redirect").Fork(_subject.Root, _ => new List<object> { new() }));
 
-		var exception = CommandSyntaxException.BuiltInExceptions.ReaderExpectedBool().Create();
+        CommandSyntaxException exception = CommandSyntaxException.BuiltInExceptions.ReaderExpectedBool().Create();
 		_command.Invoke(Arg.Any<CommandContext<object>>()).Returns(_ => throw exception);
 			
 
@@ -533,7 +534,7 @@ public class CommandDispatcherTest
 	[Fact]
 	public void TestExceptionInNonForkedRedirect()
 	{
-		var exception = CommandSyntaxException.BuiltInExceptions.ReaderExpectedBool().Create();
+        CommandSyntaxException exception = CommandSyntaxException.BuiltInExceptions.ReaderExpectedBool().Create();
 
 		_subject.Consumer = _consumer;
 		_subject.Register(r => r.Literal("noop").Executes(_command));
@@ -553,7 +554,7 @@ public class CommandDispatcherTest
 	[Fact]
 	public void TestExceptionInForkedRedirect()
 	{
-		var exception = CommandSyntaxException.BuiltInExceptions.ReaderExpectedBool().Create();
+        CommandSyntaxException exception = CommandSyntaxException.BuiltInExceptions.ReaderExpectedBool().Create();
 
 		_subject.Consumer = _consumer;
 		_subject.Register(r => r.Literal("noop").Executes(_command));
@@ -569,9 +570,9 @@ public class CommandDispatcherTest
 	[Fact]
 	public void TestPartialExceptionInForkedRedirect()
 	{
-		var exception = CommandSyntaxException.BuiltInExceptions.ReaderExpectedBool().Create();
-		var otherSource = new object();
-		var rejectedSource = new object();
+        CommandSyntaxException exception = CommandSyntaxException.BuiltInExceptions.ReaderExpectedBool().Create();
+        object otherSource = new object();
+        object rejectedSource = new object();
 			
 		_subject.Consumer = _consumer;
 			
@@ -580,7 +581,7 @@ public class CommandDispatcherTest
 		_subject.Register(r => r.Literal("split").Fork(_subject.Root, _ => new List<object> { _source, rejectedSource, otherSource }));
 		_subject.Register(r => r.Literal("filter").Fork(_subject.Root, ctx =>
 		{
-			var current = ctx.Source;
+            object current = ctx.Source;
 			if (ReferenceEquals(current, rejectedSource))
 			{
 				throw exception;

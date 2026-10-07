@@ -16,7 +16,7 @@ public class DoubleArgumentTypeTest {
 	}
 
 	[Fact]
-	public void parse_tooSmall(){
+	public void parseTooSmall(){
 		var reader = new StringReader("-5");
 		Arguments.Double(0, 100).Invoking(l => l.Parse(reader))
 			.Should().Throw<CommandSyntaxException>()
@@ -25,7 +25,7 @@ public class DoubleArgumentTypeTest {
 	}
 
 	[Fact]
-	public void parse_tooBig(){
+	public void parseTooBig(){
 		var reader = new StringReader("5");
 		Arguments.Double(-100, 0).Invoking(l => l.Parse(reader))
 			.Should().Throw<CommandSyntaxException>()
@@ -39,8 +39,7 @@ public class DoubleArgumentTypeTest {
 			.AddEqualityGroup(Arguments.Double(), Arguments.Double())
 			.AddEqualityGroup(Arguments.Double(-100, 100), Arguments.Double(-100, 100))
 			.AddEqualityGroup(Arguments.Double(-100, 50), Arguments.Double(-100, 50))
-			.AddEqualityGroup(Arguments.Double(-50, 100), Arguments.Double(-50, 100))
-			.TestEquals();
+			.AddEqualityGroup(Arguments.Double(-50, 100), Arguments.Double(-50, 100));
 	}
 
 	[Fact]

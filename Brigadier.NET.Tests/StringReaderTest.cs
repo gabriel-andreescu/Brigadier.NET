@@ -33,7 +33,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void canRead_length()
+	public void canReadLength()
 	{
 		var reader = new StringReader("abc");
 		reader.CanRead(1).Should().BeTrue();
@@ -55,7 +55,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void peek_length()
+	public void peekLength()
 	{
 		var reader = new StringReader("abc");
 		reader.Peek(0).Should().Be('a');
@@ -107,7 +107,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void skipWhitespace_none()
+	public void skipWhitespaceNone()
 	{
 		var reader = new StringReader("Hello!");
 		reader.SkipWhitespace();
@@ -115,7 +115,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void skipWhitespace_mixed()
+	public void skipWhitespaceMixed()
 	{
 		var reader = new StringReader(" \t \t\nHello!");
 		reader.SkipWhitespace();
@@ -123,7 +123,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void skipWhitespace_empty()
+	public void skipWhitespaceEmpty()
 	{
 		var reader = new StringReader("");
 		reader.SkipWhitespace();
@@ -140,7 +140,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readUnquotedString_empty()
+	public void readUnquotedStringEmpty()
 	{
 		var reader = new StringReader("");
 		reader.ReadUnquotedString().Should().BeEquivalentTo("");
@@ -149,7 +149,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readUnquotedString_empty_withRemaining()
+	public void readUnquotedStringEmptyWithRemaining()
 	{
 		var reader = new StringReader(" hello world");
 		reader.ReadUnquotedString().Should().BeEquivalentTo("");
@@ -176,7 +176,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void ReadMixedQuotedString_DoubleInsideSingle()
+	public void ReadMixedQuotedStringDoubleInsideSingle()
 	{
 		var reader = new StringReader(@"'hello ""world""'");
 		reader.ReadQuotedString().Should().BeEquivalentTo(@"hello ""world""");
@@ -185,7 +185,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void ReadMixedQuotedString_SingleInsideDouble()
+	public void ReadMixedQuotedStringSingleInsideDouble()
 	{
 		var reader = new StringReader(@"""hello 'world'""");
 		reader.ReadQuotedString().Should().BeEquivalentTo("hello 'world'");
@@ -194,7 +194,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readQuotedString_empty()
+	public void readQuotedStringEmpty()
 	{
 		var reader = new StringReader("");
 		reader.ReadQuotedString().Should().BeEquivalentTo("");
@@ -203,7 +203,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readQuotedString_emptyQuoted()
+	public void readQuotedStringEmptyQuoted()
 	{
 		var reader = new StringReader("\"\"");
 		reader.ReadQuotedString().Should().BeEquivalentTo("");
@@ -212,7 +212,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readQuotedString_emptyQuoted_withRemaining()
+	public void readQuotedStringEmptyQuotedWithRemaining()
 	{
 		var reader = new StringReader("\"\" hello world");
 		reader.ReadQuotedString().Should().BeEquivalentTo("");
@@ -221,7 +221,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readQuotedString_withEscapedQuote()
+	public void readQuotedStringWithEscapedQuote()
 	{
 		var reader = new StringReader("\"hello \\\"world\\\"\"");
 		reader.ReadQuotedString().Should().BeEquivalentTo("hello \"world\"");
@@ -230,7 +230,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readQuotedString_withEscapedEscapes()
+	public void readQuotedStringWithEscapedEscapes()
 	{
 		var reader = new StringReader("\"\\\\o/\"");
 		reader.ReadQuotedString().Should().BeEquivalentTo("\\o/");
@@ -239,7 +239,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readQuotedString_withRemaining()
+	public void readQuotedStringWithRemaining()
 	{
 		var reader = new StringReader("\"hello world\" foo bar");
 		reader.ReadQuotedString().Should().BeEquivalentTo("hello world");
@@ -248,7 +248,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readQuotedString_withImmediateRemaining()
+	public void readQuotedStringWithImmediateRemaining()
 	{
 		var reader = new StringReader("\"hello world\"foo bar");
 		reader.ReadQuotedString().Should().BeEquivalentTo("hello world");
@@ -257,7 +257,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readQuotedString_noOpen()
+	public void readQuotedStringNoOpen()
 	{
 		var reader = new StringReader("hello world\"");
 
@@ -268,7 +268,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readQuotedString_noClose()
+	public void readQuotedStringNoClose()
 	{
 		var reader = new StringReader("\"hello world");
 
@@ -279,7 +279,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readQuotedString_invalidEscape()
+	public void readQuotedStringInvalidEscape()
 	{
 		var reader = new StringReader("\"hello\\nworld\"");
 
@@ -290,7 +290,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void ReadQuotedString_InvalidQuoteEscape()
+	public void ReadQuotedStringInvalidQuoteEscape()
 	{
 		var reader = new StringReader("'hello\\\"\'world");
 
@@ -301,7 +301,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void ReadQuotedString_NoQuotes()
+	public void ReadQuotedStringNoQuotes()
 	{
 		var reader = new StringReader("hello world");
 		reader.ReadString().Should().Be("hello");
@@ -310,7 +310,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void ReadQuotedString_SingleQuotes()
+	public void ReadQuotedStringSingleQuotes()
 	{
 		var reader = new StringReader("'hello world'");
 		reader.ReadString().Should().Be("hello world");
@@ -319,7 +319,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void ReadQuotedString_DoubleQuotes()
+	public void ReadQuotedStringDoubleQuotes()
 	{
 		var reader = new StringReader(@"""hello world""");
 		reader.ReadString().Should().Be("hello world");
@@ -337,7 +337,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readInt_negative()
+	public void readIntNegative()
 	{
 		var reader = new StringReader("-1234567890");
 		reader.ReadInt().Should().Be(-1234567890);
@@ -346,7 +346,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readInt_invalid()
+	public void readIntInvalid()
 	{
 		var reader = new StringReader("12.34");
 
@@ -357,7 +357,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readInt_none()
+	public void readIntNone()
 	{
 		var reader = new StringReader("");
 
@@ -368,7 +368,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readInt_withRemaining()
+	public void readIntWithRemaining()
 	{
 		var reader = new StringReader("1234567890 foo bar");
 		reader.ReadInt().Should().Be(1234567890);
@@ -377,7 +377,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readInt_withRemainingImmediate()
+	public void readIntWithRemainingImmediate()
 	{
 		var reader = new StringReader("1234567890foo bar");
 		reader.ReadInt().Should().Be(1234567890);
@@ -395,7 +395,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readLong_negative()
+	public void readLongNegative()
 	{
 		var reader = new StringReader("-1234567890");
 		reader.ReadLong().Should().Be(-1234567890L);
@@ -404,7 +404,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readLong_invalid()
+	public void readLongInvalid()
 	{
 		var reader = new StringReader("12.34");
 
@@ -415,7 +415,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readLong_none()
+	public void readLongNone()
 	{
 		var reader = new StringReader("");
 
@@ -426,7 +426,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readLong_withRemaining()
+	public void readLongWithRemaining()
 	{
 		var reader = new StringReader("1234567890 foo bar");
 		reader.ReadLong().Should().Be(1234567890L);
@@ -435,7 +435,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readLong_withRemainingImmediate()
+	public void readLongWithRemainingImmediate()
 	{
 		var reader = new StringReader("1234567890foo bar");
 		reader.ReadLong().Should().Be(1234567890L);
@@ -453,7 +453,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readDouble_withDecimal()
+	public void readDoubleWithDecimal()
 	{
 		var reader = new StringReader("12.34");
 		reader.ReadDouble().Should().Be(12.34);
@@ -462,7 +462,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readDouble_negative()
+	public void readDoubleNegative()
 	{
 		var reader = new StringReader("-123");
 		reader.ReadDouble().Should().Be(-123.0);
@@ -471,7 +471,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readDouble_invalid()
+	public void readDoubleInvalid()
 	{
 		var reader = new StringReader("12.34.56");
 		reader.Invoking(r => reader.ReadDouble())
@@ -481,7 +481,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readDouble_none()
+	public void readDoubleNone()
 	{
 		var reader = new StringReader("");
 		reader.Invoking(r => reader.ReadDouble())
@@ -491,7 +491,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readDouble_withRemaining()
+	public void readDoubleWithRemaining()
 	{
 		var reader = new StringReader("12.34 foo bar");
 		reader.ReadDouble().Should().Be(12.34);
@@ -500,7 +500,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readDouble_withRemainingImmediate()
+	public void readDoubleWithRemainingImmediate()
 	{
 		var reader = new StringReader("12.34foo bar");
 		reader.ReadDouble().Should().Be(12.34);
@@ -518,7 +518,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readFloat_withDecimal()
+	public void readFloatWithDecimal()
 	{
 		var reader = new StringReader("12.34");
 		reader.ReadFloat().Should().Be(12.34f);
@@ -527,7 +527,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readFloat_negative()
+	public void readFloatNegative()
 	{
 		var reader = new StringReader("-123");
 		reader.ReadFloat().Should().Be(-123.0f);
@@ -536,7 +536,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readFloat_invalid()
+	public void readFloatInvalid()
 	{
 		var reader = new StringReader("12.34.56");
 
@@ -547,7 +547,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readFloat_none()
+	public void readFloatNone()
 	{
 		var reader = new StringReader("");
 
@@ -558,7 +558,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readFloat_withRemaining()
+	public void readFloatWithRemaining()
 	{
 		var reader = new StringReader("12.34 foo bar");
 		reader.ReadFloat().Should().Be(12.34f);
@@ -567,7 +567,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readFloat_withRemainingImmediate()
+	public void readFloatWithRemainingImmediate()
 	{
 		var reader = new StringReader("12.34foo bar");
 		reader.ReadFloat().Should().Be(12.34f);
@@ -576,7 +576,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void expect_correct()
+	public void expectCorrect()
 	{
 		var reader = new StringReader("abc");
 		reader.Expect('a');
@@ -584,7 +584,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void expect_incorrect()
+	public void expectIncorrect()
 	{
 		var reader = new StringReader("bcd");
 		reader.Invoking(r => r.Expect('a'))
@@ -594,7 +594,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void expect_none()
+	public void expectNone()
 	{
 		var reader = new StringReader("");
 		reader.Invoking(r => r.Expect('a'))
@@ -604,7 +604,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readBoolean_correct()
+	public void readBooleanCorrect()
 	{
 		var reader = new StringReader("true");
 		reader.ReadBoolean().Should().Be(true);
@@ -612,7 +612,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readBoolean_incorrect()
+	public void readBooleanIncorrect()
 	{
 		var reader = new StringReader("tuesday");
 		reader.Invoking(r => r.ReadBoolean())
@@ -622,7 +622,7 @@ public class StringReaderTest
 	}
 
 	[Fact]
-	public void readBoolean_none()
+	public void readBooleanNone()
 	{
 		var reader = new StringReader("");
 		reader.Invoking(r => reader.ReadBoolean())

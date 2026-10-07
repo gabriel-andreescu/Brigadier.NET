@@ -20,8 +20,8 @@ public class IntegerArgumentType : IArgumentType<int>
 	///<exception cref="CommandSyntaxException" />
 	public int Parse(IStringReader reader)
 	{
-		var start = reader.Cursor;
-		var result = reader.ReadInt();
+        int start = reader.Cursor;
+        int result = reader.ReadInt();
 		if (result < Minimum)
 		{
 			reader.Cursor = start;
@@ -38,12 +38,19 @@ public class IntegerArgumentType : IArgumentType<int>
 	public IEnumerable<string> Examples => IntegerExamples;
 
 
-	public override bool Equals(object? o)
+	public override bool Equals(object? obj)
 	{
-		if (this == o) return true;
-		if (o is not IntegerArgumentType that) return false;
+		if (this == obj)
+        {
+            return true;
+        }
 
-		return Maximum == that.Maximum && Minimum == that.Minimum;
+        if (obj is not IntegerArgumentType that)
+        {
+            return false;
+        }
+
+        return Maximum == that.Maximum && Minimum == that.Minimum;
 	}
 
 	public override int GetHashCode()

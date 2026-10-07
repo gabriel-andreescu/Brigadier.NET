@@ -11,20 +11,20 @@ namespace Brigadier.NET.Tests.suggestion;
 
 public class SuggestionsTest {
 	[Fact]
-	public void merge_empty() {
+	public void mergeEmpty() {
 		var merged = Suggestions.Merge("foo b", new List<Suggestions>());
 		merged.IsEmpty().Should().Be(true);
 	}
 
 	[Fact]
-	public void merge_single() {
+	public void mergeSingle() {
 		var suggestions = new Suggestions(StringRange.At(5), [new Suggestion.Suggestion(StringRange.At(5), "ar")]);
 		var merged = Suggestions.Merge("foo b", new List<Suggestions> { suggestions });
 		merged.Should().BeEquivalentTo(suggestions);
 	}
 
 	[Fact]
-	public void merge_multiple() {
+	public void mergeMultiple() {
 		var a = new Suggestions(StringRange.At(5), [new Suggestion.Suggestion(StringRange.At(5), "ar"), new Suggestion.Suggestion(StringRange.At(5), "az"), new Suggestion.Suggestion(StringRange.At(5), "Az")]);
 		var b = new Suggestions(StringRange.Between(4, 5), [new Suggestion.Suggestion(StringRange.Between(4, 5), "foo"), new Suggestion.Suggestion(StringRange.Between(4, 5), "qux"), new Suggestion.Suggestion(StringRange.Between(4, 5), "apple"), new Suggestion.Suggestion(StringRange.Between(4, 5), "Bar")]);
 		var merged = Suggestions.Merge("foo b", new List<Suggestions> { a, b });

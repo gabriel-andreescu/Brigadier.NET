@@ -18,7 +18,7 @@ public class BoolArgumentTypeTest {
 
 	[Fact]
 	public void Parse(){
-		var reader = Substitute.For<IStringReader>();
+        IStringReader reader = Substitute.For<IStringReader>();
 		reader.ReadBoolean().Returns(true);
 		_type.Parse(reader).Should().Be(true);
 

@@ -37,4 +37,8 @@ public struct ParsedArgument<TSource, T> : IParsedArgument, IEquatable<ParsedArg
 	{
 		return HashCode.Combine(Range, _result);
 	}
+
+	public static bool operator ==(ParsedArgument<TSource, T> left, ParsedArgument<TSource, T> right) => left.Equals(right);
+
+	public static bool operator !=(ParsedArgument<TSource, T> left, ParsedArgument<TSource, T> right) => !left.Equals(right);
 }

@@ -17,7 +17,7 @@ public class FloatArgumentTypeTest {
 	}
 
 	[Fact]
-	public void parse_tooSmall(){
+	public void parseTooSmall(){
 		var reader = new StringReader("-5");
 		Float(0, 100).Invoking(l => l.Parse(reader))
 			.Should().Throw<CommandSyntaxException>()
@@ -26,7 +26,7 @@ public class FloatArgumentTypeTest {
 	}
 
 	[Fact]
-	public void parse_tooBig(){
+	public void parseTooBig(){
 		var reader = new StringReader("5");
 		Float(-100, 0).Invoking(l => l.Parse(reader))
 			.Should().Throw<CommandSyntaxException>()
@@ -40,8 +40,7 @@ public class FloatArgumentTypeTest {
 			.AddEqualityGroup(Float(), Float())
 			.AddEqualityGroup(Float(-100, 100), Float(-100, 100))
 			.AddEqualityGroup(Float(-100, 50), Float(-100, 50))
-			.AddEqualityGroup(Float(-50, 100), Float(-50, 100))
-			.TestEquals();
+			.AddEqualityGroup(Float(-50, 100), Float(-50, 100));
 	}
 
 	[Fact]

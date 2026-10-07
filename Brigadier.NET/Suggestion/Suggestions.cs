@@ -24,17 +24,33 @@ public class Suggestions : IEquatable<Suggestions>
 
 	public override bool Equals(object? obj)
 	{
-		if (ReferenceEquals(null, obj)) return false;
-		if (ReferenceEquals(this, obj)) return true;
-		return obj is Suggestions other 
+		if (ReferenceEquals(null, obj))
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, obj))
+        {
+            return true;
+        }
+
+        return obj is Suggestions other 
 		       && Equals(other);
 	}
 
 	public bool Equals(Suggestions? other)
 	{
-		if (ReferenceEquals(null, other)) return false;
-		if (ReferenceEquals(this, other)) return true;
-		return Equals(Range, other.Range) 
+		if (ReferenceEquals(null, other))
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
+        return Equals(Range, other.Range) 
 		       && Equals(List, other.List);
 	}
 
@@ -64,10 +80,10 @@ public class Suggestions : IEquatable<Suggestions>
 			return input.Single();
 		}
 
-		ISet<Suggestion> texts = new HashSet<Suggestion>();
-		foreach (var suggestions in input)
+		var texts = new HashSet<Suggestion>();
+		foreach (Suggestions suggestions in input)
 		{
-			foreach (var suggestion in suggestions.List)
+			foreach (Suggestion suggestion in suggestions.List)
 			{
 				texts.Add(suggestion);
 			}
@@ -81,16 +97,16 @@ public class Suggestions : IEquatable<Suggestions>
 		{
 			return NoSuggestions;
 		}
-		var start = int.MaxValue;
-		var end = int.MinValue;
-		foreach (var suggestion in suggestions)
+        int start = int.MaxValue;
+        int end = int.MinValue;
+		foreach (Suggestion suggestion in suggestions)
 		{
 			start = Math.Min(suggestion.Range.Start, start);
 			end = Math.Max(suggestion.Range.End, end);
 		}
 		var range = new StringRange(start, end);
 		var texts = new HashSet<Suggestion>();
-		foreach (var suggestion in suggestions)
+		foreach (Suggestion suggestion in suggestions)
 		{
 			texts.Add(suggestion.Expand(command, range));
 		}

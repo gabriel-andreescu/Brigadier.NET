@@ -15,7 +15,7 @@ public class StringArgumentType : IArgumentType<string> {
 	public string Parse(IStringReader reader)
 	{
 		if (Type == StringArgType.GreedyPhrase) {
-			var text = reader.Remaining;
+            string text = reader.Remaining;
 			reader.Cursor = reader.TotalLength;
 			return text;
 		} else if (Type == StringArgType.SingleWord) {
@@ -34,7 +34,7 @@ public class StringArgumentType : IArgumentType<string> {
 
 	public static string EscapeIfRequired(string input)
 	{
-		foreach (var c in input)
+		foreach (char c in input)
 		{
 			if (!StringReader.IsAllowedInUnquotedString(c))
 			{
@@ -48,9 +48,9 @@ public class StringArgumentType : IArgumentType<string> {
 	{
 		var result = new StringBuilder("\"");
 
-		for (var i = 0; i < input.Length; i++)
+		for (int i = 0; i < input.Length; i++)
 		{
-			var c = input[i];
+            char c = input[i];
 			if (c == '\\' || c == '"')
 			{
 				result.Append('\\');
@@ -58,7 +58,7 @@ public class StringArgumentType : IArgumentType<string> {
 			result.Append(c);
 		}
 
-		result.Append("\"");
+		result.Append('"');
 		return result.ToString();
 	}
 

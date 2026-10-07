@@ -51,7 +51,7 @@ public class CommandContext<TSource> : IEquatable<CommandContext<TSource>>
 	{
 		get
 		{
-			var result = this;
+            CommandContext<TSource> result = this;
 			while (result.Child != null)
 			{
 				result = result.Child;
@@ -69,12 +69,12 @@ public class CommandContext<TSource> : IEquatable<CommandContext<TSource>>
 
 	public T GetArgument<T>(string name)
 	{
-		if (!_arguments.TryGetValue(name, out var argument))
+		if (!_arguments.TryGetValue(name, out IParsedArgument? argument))
 		{
 			throw new InvalidOperationException($"No such argument '{name}' exists on this command");
 		}
 
-		var result = argument.Result;
+        object result = argument.Result;
 
 		if (result is T v)
 		{
@@ -88,16 +88,32 @@ public class CommandContext<TSource> : IEquatable<CommandContext<TSource>>
 
 	public override bool Equals(object? obj)
 	{
-		if (ReferenceEquals(null, obj)) return false;
-		if (ReferenceEquals(this, obj)) return true;
-		return obj is CommandContext<TSource> other && Equals(other);
+		if (ReferenceEquals(null, obj))
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, obj))
+        {
+            return true;
+        }
+
+        return obj is CommandContext<TSource> other && Equals(other);
 	}
 
 	public bool Equals(CommandContext<TSource>? other)
 	{
-		if (ReferenceEquals(null, other)) return false;
-		if (ReferenceEquals(this, other)) return true;
-		return _arguments.SequenceEqual(other._arguments) 
+		if (ReferenceEquals(null, other))
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
+        return _arguments.SequenceEqual(other._arguments) 
 		       && Equals(RootNode, other.RootNode) 
 		       && Nodes.SequenceEqual(other.Nodes) 
 		       && Equals(Command, other.Command) 

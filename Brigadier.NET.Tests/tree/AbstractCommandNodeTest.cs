@@ -17,26 +17,26 @@ public abstract class AbstractCommandNodeTest {
 
 	[Fact]
 	public void TestAddChild(){
-		var node = GetCommandNode();
+        CommandNode<object> node = GetCommandNode();
 
 		
 
-		node.AddChild(LiteralArgumentBuilder<object>.LiteralArgument("child1").Build());
-		node.AddChild(LiteralArgumentBuilder<object>.LiteralArgument("child2").Build());
-		node.AddChild(LiteralArgumentBuilder<object>.LiteralArgument("child1").Build());
+		node.AddChild(new LiteralArgumentBuilder<object>("child1").Build());
+		node.AddChild(new LiteralArgumentBuilder<object>("child2").Build());
+		node.AddChild(new LiteralArgumentBuilder<object>("child1").Build());
 
 		node.Children.Should().HaveCount(2);
 	}
 
 	[Fact]
 	public void TestAddChildMergesGrandchildren(){
-		var node = GetCommandNode();
+        CommandNode<object> node = GetCommandNode();
 
-		node.AddChild(LiteralArgumentBuilder<object>.LiteralArgument("child")
+		node.AddChild(new LiteralArgumentBuilder<object>("child")
 			.Then(r => r.Literal("grandchild1"))
 			.Build());
 
-		node.AddChild(LiteralArgumentBuilder<object>.LiteralArgument("child")
+		node.AddChild(new LiteralArgumentBuilder<object>("child")
 			.Then(r => r.Literal("grandchild2"))
 			.Build());
 
@@ -46,40 +46,40 @@ public abstract class AbstractCommandNodeTest {
 
 	[Fact]
 	public void TestAddChildPreservesCommand(){
-		var node = GetCommandNode();
+        CommandNode<object> node = GetCommandNode();
 
-		node.AddChild(LiteralArgumentBuilder<object>.LiteralArgument("child").Executes(_command).Build());
-		node.AddChild(LiteralArgumentBuilder<object>.LiteralArgument("child").Build());
+		node.AddChild(new LiteralArgumentBuilder<object>("child").Executes(_command).Build());
+		node.AddChild(new LiteralArgumentBuilder<object>("child").Build());
 
 		node.Children.First().Command.Should().Be(_command);
 	}
 
 	[Fact]
 	public void TestAddChildPreservesDescription(){
-		var node = GetCommandNode();
+        CommandNode<object> node = GetCommandNode();
 
-		node.AddChild(LiteralArgumentBuilder<object>.LiteralArgument("child").Describes("A child.").Build());
-		node.AddChild(LiteralArgumentBuilder<object>.LiteralArgument("child").Build());
+		node.AddChild(new LiteralArgumentBuilder<object>("child").Describes("A child.").Build());
+		node.AddChild(new LiteralArgumentBuilder<object>("child").Build());
 
 		node.Children.First().Description!.String.Should().Be("A child.");
 	}
 
 	[Fact]
 	public void TestAddChildOverwritesDescription(){
-		var node = GetCommandNode();
+        CommandNode<object> node = GetCommandNode();
 
-		node.AddChild(LiteralArgumentBuilder<object>.LiteralArgument("child").Build());
-		node.AddChild(LiteralArgumentBuilder<object>.LiteralArgument("child").Describes("A child.").Build());
+		node.AddChild(new LiteralArgumentBuilder<object>("child").Build());
+		node.AddChild(new LiteralArgumentBuilder<object>("child").Describes("A child.").Build());
 
 		node.Children.First().Description!.String.Should().Be("A child.");
 	}
 
 	[Fact]
 	public void TestAddChildOverwritesCommand(){
-		var node = GetCommandNode();
+        CommandNode<object> node = GetCommandNode();
 
-		node.AddChild(LiteralArgumentBuilder<object>.LiteralArgument("child").Build());
-		node.AddChild(LiteralArgumentBuilder<object>.LiteralArgument("child").Executes(_command).Build());
+		node.AddChild(new LiteralArgumentBuilder<object>("child").Build());
+		node.AddChild(new LiteralArgumentBuilder<object>("child").Executes(_command).Build());
 
 		node.Children.First().Command.Should().Be(_command);
 	}

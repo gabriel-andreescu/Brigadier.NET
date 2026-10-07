@@ -16,7 +16,7 @@ public class LongArgumentTypeTest {
 	}
 
 	[Fact]
-	public void parse_tooSmall(){
+	public void parseTooSmall(){
 		var reader = new StringReader("-5");
 		Arguments.Long(0, 100).Invoking(l => l.Parse(reader))
 			.Should().Throw<CommandSyntaxException>()
@@ -25,7 +25,7 @@ public class LongArgumentTypeTest {
 	}
 
 	[Fact]
-	public void parse_tooBig(){
+	public void parseTooBig(){
 		var reader = new StringReader("5");
 
 		Arguments.Long(-100, 0).Invoking(l => l.Parse(reader))
@@ -40,8 +40,7 @@ public class LongArgumentTypeTest {
 			.AddEqualityGroup(Arguments.Long(), Arguments.Long())
 			.AddEqualityGroup(Arguments.Long(-100, 100), Arguments.Long(-100, 100))
 			.AddEqualityGroup(Arguments.Long(-100, 50), Arguments.Long(-100, 50))
-			.AddEqualityGroup(Arguments.Long(-50, 100), Arguments.Long(-50, 100))
-			.TestEquals();
+			.AddEqualityGroup(Arguments.Long(-50, 100), Arguments.Long(-50, 100));
 	}
 
 	[Fact]

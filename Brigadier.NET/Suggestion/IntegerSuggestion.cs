@@ -1,4 +1,5 @@
-﻿using Brigadier.NET.Context;
+﻿using System.Globalization;
+using Brigadier.NET.Context;
 
 namespace Brigadier.NET.Suggestion;
 
@@ -6,7 +7,7 @@ namespace Brigadier.NET.Suggestion;
 public class IntegerSuggestion : Suggestion, IEquatable<IntegerSuggestion>
 {
 	public IntegerSuggestion(StringRange range, int value, IMessage? tooltip = null)
-		: base(range, value.ToString(), tooltip)
+		: base(range, value.ToString(CultureInfo.InvariantCulture), tooltip)
 	{
 		Value = value;
 	}
@@ -15,17 +16,33 @@ public class IntegerSuggestion : Suggestion, IEquatable<IntegerSuggestion>
 
 	public override bool Equals(object? obj)
 	{
-		if (ReferenceEquals(null, obj)) return false;
-		if (ReferenceEquals(this, obj)) return true;
-		return obj is IntegerSuggestion other 
+		if (ReferenceEquals(null, obj))
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, obj))
+        {
+            return true;
+        }
+
+        return obj is IntegerSuggestion other 
 		       && Equals(other);
 	}
 
 	public bool Equals(IntegerSuggestion? other)
 	{
-		if (ReferenceEquals(null, other)) return false;
-		if (ReferenceEquals(this, other)) return true;
-		return Value == other?.Value 
+		if (ReferenceEquals(null, other))
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
+        return Value == other?.Value 
 		       && base.Equals(other);
 	}
 

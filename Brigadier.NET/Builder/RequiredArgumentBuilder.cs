@@ -11,7 +11,7 @@ public static class RequiredArgumentBuilderExtensions
 	// context is used to infer generic parameters in API
 	public static RequiredArgumentBuilder<TSource, T> Argument<TSource, T>(this IArgumentContext<TSource> context, string name, IArgumentType<T> type) where T : notnull
 	{
-		return RequiredArgumentBuilder<TSource, T>.RequiredArgument(name, type);
+		return new RequiredArgumentBuilder<TSource, T>(name, type);
 	}
 }
 
@@ -20,15 +20,10 @@ public class RequiredArgumentBuilder<TSource, T> : ArgumentBuilder<TSource, Requ
 {
 	private SuggestionProvider<TSource>? _suggestionsProvider;
 
-	private RequiredArgumentBuilder(string name, IArgumentType<T> type)
+	public RequiredArgumentBuilder(string name, IArgumentType<T> type)
 	{
 		Name = name;
 		Type = type;
-	}
-
-	public static RequiredArgumentBuilder<TSource, T> RequiredArgument(string name, IArgumentType<T> type)
-	{
-		return new RequiredArgumentBuilder<TSource, T>(name, type);
 	}
 
 	public RequiredArgumentBuilder<TSource, T> Suggests(SuggestionProvider<TSource>? provider)
@@ -48,7 +43,7 @@ public class RequiredArgumentBuilder<TSource, T> : ArgumentBuilder<TSource, Requ
 			Description = Description
 		};
 
-		foreach (var argument in Arguments)
+		foreach (CommandNode<TSource> argument in Arguments)
 		{
 			result.AddChild(argument);
 		}

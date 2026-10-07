@@ -22,16 +22,32 @@ public class ParsedCommandNode<TSource> : IEquatable<ParsedCommandNode<TSource>>
 
 	public override bool Equals(object? obj)
 	{
-		if (ReferenceEquals(null, obj)) return false;
-		if (ReferenceEquals(this, obj)) return true;
-		return obj is ParsedCommandNode<TSource> other && Equals(other);
+		if (ReferenceEquals(null, obj))
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, obj))
+        {
+            return true;
+        }
+
+        return obj is ParsedCommandNode<TSource> other && Equals(other);
 	}
 
 	public bool Equals(ParsedCommandNode<TSource>? other)
 	{
-		if (ReferenceEquals(null, other)) return false;
-		if (ReferenceEquals(this, other)) return true;
-		return Equals(Node, other.Node) && Equals(Range, other.Range);
+		if (ReferenceEquals(null, other))
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
+        return Equals(Node, other.Node) && Equals(Range, other.Range);
 	}
 
 	public override int GetHashCode()

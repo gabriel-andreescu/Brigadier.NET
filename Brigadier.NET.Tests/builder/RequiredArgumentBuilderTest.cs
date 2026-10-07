@@ -3,6 +3,7 @@
 
 using Brigadier.NET.ArgumentTypes;
 using Brigadier.NET.Builder;
+using Brigadier.NET.Tree;
 using FluentAssertions;
 using NSubstitute;
 using Xunit;
@@ -16,12 +17,12 @@ public class RequiredArgumentBuilderTest {
 
 	public RequiredArgumentBuilderTest()
 	{
-		_builder = RequiredArgumentBuilder<object, int>.RequiredArgument("foo", _type);
+		_builder = new RequiredArgumentBuilder<object, int>("foo", _type);
 	}
 
 	[Fact]
 	public void TestBuild(){
-		var node = _builder.Build();
+        ArgumentCommandNode<object, int> node = _builder.Build();
 
 		node.Name.Should().Be("foo");
 		node.Type.Should().Be(_type);
@@ -29,14 +30,14 @@ public class RequiredArgumentBuilderTest {
 
 	[Fact]
 	public void TestBuildWithDescription(){
-		var node = _builder.Describes("A number of foos.").Build();
+        ArgumentCommandNode<object, int> node = _builder.Describes("A number of foos.").Build();
 
 		node.Description!.String.Should().Be("A number of foos.");
 	}
 
 	[Fact]
 	public void TestBuildWithExecutor(){
-		var node = _builder.Executes(_command).Build();
+        ArgumentCommandNode<object, int> node = _builder.Executes(_command).Build();
 
 		node.Name.Should().Be("foo");
 		node.Type.Should().Be(_type);
@@ -47,7 +48,7 @@ public class RequiredArgumentBuilderTest {
 	public void TestBuildWithChildren(){
 		_builder.Then(r => r.Argument("bar", Arguments.Integer()));
 		_builder.Then(r => r.Argument("baz", Arguments.Integer()));
-		var node = _builder.Build();
+        ArgumentCommandNode<object, int> node = _builder.Build();
 
 		node.Children.Should().HaveCount(2);
 	}

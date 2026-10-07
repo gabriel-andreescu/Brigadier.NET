@@ -7,17 +7,78 @@ public static class ContextChain
 {
 	public static bool TryFlatten<TSource>(this CommandContext<TSource> rootContext, [NotNullWhen(true)] out ContextChain<TSource>? chain)
 	{
-		return ContextChain<TSource>.TryFlatten(rootContext, out chain);
+		var modifiers = new List<CommandContext<TSource>>();
+		CommandContext<TSource> current = rootContext;
+		while (true)
+		{
+			CommandContext<TSource>? child = current.Child;
+			if (child == null)
+			{
+				// Last entry must be executable command
+				if (current.Command == null)
+				{
+					chain = null;
+					return false;
+				}
+				chain = new ContextChain<TSource>(modifiers, current);
+				return true;
+			}
+			modifiers.Add(current);
+			current = child;
+		}
 	}
 
-	public static int RunExecutable<TSource>(this CommandContext<TSource> executable, TSource source, ResultConsumer<TSource> resultConsumer, bool forkedMode)
-	{
-		return ContextChain<TSource>.RunExecutable(executable, source, resultConsumer, forkedMode);
-	}
-
+	/// <summary>
+	/// Run a modifier context and return the produced sources for the next stage.
+	/// </summary>
 	public static IList<TSource> RunModifier<TSource>(this CommandContext<TSource> modifier, TSource source, ResultConsumer<TSource> resultConsumer, bool forkedMode)
 	{
-		return ContextChain<TSource>.RunModifier(modifier, source, resultConsumer, forkedMode);
+		RedirectModifier<TSource>? sourceModifier = modifier.RedirectModifier;
+
+		// Note: source currently in context is irrelevant at this point, since we might have updated it earlier
+		if (sourceModifier == null)
+		{
+			// Simple redirect, just propagate source to next node
+			return new List<TSource> { source };
+		}
+
+		CommandContext<TSource> contextToUse = modifier.CopyFor(source);
+		try
+		{
+			return sourceModifier(contextToUse);
+		}
+		catch (CommandSyntaxException)
+		{
+			resultConsumer(contextToUse, false, 0);
+			if (forkedMode)
+			{
+				return Array.Empty<TSource>();
+			}
+			throw;
+		}
+	}
+
+	/// <summary>
+	/// Execute the final (executable) context for a given source.
+	/// </summary>
+	public static int RunExecutable<TSource>(this CommandContext<TSource> executable, TSource source, ResultConsumer<TSource> resultConsumer, bool forkedMode)
+	{
+		CommandContext<TSource> contextToUse = executable.CopyFor(source);
+		try
+		{
+			int result = executable.Command!(contextToUse);
+			resultConsumer(contextToUse, true, result);
+			return forkedMode ? 1 : result;
+		}
+		catch (CommandSyntaxException)
+		{
+			resultConsumer(contextToUse, false, 0);
+			if (forkedMode)
+			{
+				return 0;
+			}
+			throw;
+		}
 	}
 }
 
@@ -39,82 +100,6 @@ public class ContextChain<TSource>
 		_modifiers = modifiers;
 		_executable = executable;
 	}
-		
-	public static bool TryFlatten(CommandContext<TSource> rootContext, [NotNullWhen(true)] out ContextChain<TSource>? chain)
-	{
-		var modifiers = new List<CommandContext<TSource>>();
-		var current = rootContext;
-		while (true)
-		{
-			var child = current.Child;
-			if (child == null)
-			{
-				// Last entry must be executable command
-				if (current.Command == null)
-				{
-					chain = null;
-					return false;
-				}
-				chain = new ContextChain<TSource>(modifiers, current);
-				return true;
-			}
-			modifiers.Add(current);
-			current = child;
-		}
-	}
-
-	/// <summary>
-	/// Run a modifier context and return the produced sources for the next stage.
-	/// </summary>
-	public static IList<TSource> RunModifier(CommandContext<TSource> modifier, TSource source, ResultConsumer<TSource> resultConsumer, bool forkedMode)
-	{
-		var sourceModifier = modifier.RedirectModifier;
-
-		// Note: source currently in context is irrelevant at this point, since we might have updated it earlier
-		if (sourceModifier == null)
-		{
-			// Simple redirect, just propagate source to next node
-			return new List<TSource> { source };
-		}
-
-		var contextToUse = modifier.CopyFor(source);
-		try
-		{
-			return sourceModifier(contextToUse);
-		}
-		catch (CommandSyntaxException)
-		{
-			resultConsumer(contextToUse, false, 0);
-			if (forkedMode)
-			{
-				return Array.Empty<TSource>();
-			}
-			throw;
-		}
-	}
-
-	/// <summary>
-	/// Execute the final (executable) context for a given source.
-	/// </summary>
-	public static int RunExecutable(CommandContext<TSource> executable, TSource source, ResultConsumer<TSource> resultConsumer, bool forkedMode)
-	{
-		var contextToUse = executable.CopyFor(source);
-		try
-		{
-			var result = executable.Command!(contextToUse);
-			resultConsumer(contextToUse, true, result);
-			return forkedMode ? 1 : result;
-		}
-		catch (CommandSyntaxException)
-		{
-			resultConsumer(contextToUse, false, 0);
-			if (forkedMode)
-			{
-				return 0;
-			}
-			throw;
-		}
-	}
 
 	/// <summary>
 	/// Execute the entire chain for the initial source.
@@ -124,20 +109,20 @@ public class ContextChain<TSource>
 		if (_modifiers.Count == 0)
 		{
 			// Fast path – only executable stage
-			return RunExecutable(_executable, source, resultConsumer, forkedMode: false);
+			return _executable.RunExecutable(source, resultConsumer, forkedMode: false);
 		}
 
-		var forkedMode = false;
+        bool forkedMode = false;
 		IList<TSource> currentSources = new List<TSource> { source };
 
-		foreach (var modifier in _modifiers)
+		foreach (CommandContext<TSource> modifier in _modifiers)
 		{
 			forkedMode |= modifier.IsForked();
 
 			var nextSources = new List<TSource>();
-			foreach (var s in currentSources)
+			foreach (TSource? s in currentSources)
 			{
-				var produced = RunModifier(modifier, s, resultConsumer, forkedMode);
+                IList<TSource> produced = modifier.RunModifier(s, resultConsumer, forkedMode);
 				if (produced.Count > 0)
 				{
 					nextSources.AddRange(produced);
@@ -150,10 +135,10 @@ public class ContextChain<TSource>
 			currentSources = nextSources;
 		}
 
-		var total = 0;
-		foreach (var execSource in currentSources)
+        int total = 0;
+		foreach (TSource? execSource in currentSources)
 		{
-			total += RunExecutable(_executable, execSource, resultConsumer, forkedMode);
+			total += _executable.RunExecutable(execSource, resultConsumer, forkedMode);
 		}
 		return total;
 	}
@@ -164,7 +149,7 @@ public class ContextChain<TSource>
 
 	public ContextChain<TSource>? NextStage()
 	{
-		var modifierCount = _modifiers.Count;
+        int modifierCount = _modifiers.Count;
 		if (modifierCount == 0)
 		{
 			return null;

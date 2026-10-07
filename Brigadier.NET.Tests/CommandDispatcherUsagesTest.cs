@@ -99,25 +99,25 @@ public class CommandDispatcherUsagesTest
 	}
 
 	[Fact]
-	public void testAllUsage_noCommands()
+	public void testAllUsageNoCommands()
 	{
 		_subject = new CommandDispatcher<object>();
-		var results = _subject.GetAllUsage(_subject.Root, _source, true);
+        string[] results = _subject.GetAllUsage(_subject.Root, _source, true);
 		results.Should().BeEmpty();
 	}
 
 	[Fact]
-	public void testSmartUsage_noCommands()
+	public void testSmartUsageNoCommands()
 	{
 		_subject = new CommandDispatcher<object>();
-		var results = _subject.GetSmartUsage(_subject.Root, _source);
+        IDictionary<CommandNode<object>, string> results = _subject.GetSmartUsage(_subject.Root, _source);
 		results.Should().BeEmpty();
 	}
 
 	[Fact]
-	public void testAllUsage_root()
+	public void testAllUsageRoot()
 	{
-		var results = _subject.GetAllUsage(_subject.Root, _source, true);
+        string[] results = _subject.GetAllUsage(_subject.Root, _source, true);
 		results.Should().ContainInOrder(
 			"a 1 i", 
 			"a 1 ii", 
@@ -146,9 +146,9 @@ public class CommandDispatcherUsagesTest
 	}
 
 	[Fact]
-	public void testSmartUsage_root()
+	public void testSmartUsageRoot()
 	{
-		var results = _subject.GetSmartUsage(_subject.Root, _source);
+        IDictionary<CommandNode<object>, string> results = _subject.GetSmartUsage(_subject.Root, _source);
 		results.Should().Contain(new Dictionary<CommandNode<object>, string>
 		{
 			{Get("a"), "a (1|2)"},
@@ -165,9 +165,9 @@ public class CommandDispatcherUsagesTest
 	}
 
 	[Fact]
-	public void testSmartUsage_h()
+	public void testSmartUsageH()
 	{
-		var results = _subject.GetSmartUsage(Get("h"), _source);
+        IDictionary<CommandNode<object>, string> results = _subject.GetSmartUsage(Get("h"), _source);
 		results.Should().Contain(new Dictionary<CommandNode<object>, string>
 		{
 			{Get("h 1"), "[1] i"},
@@ -177,14 +177,14 @@ public class CommandDispatcherUsagesTest
 	}
 
 	[Fact]
-	public void testSmartUsage_offsetH()
+	public void testSmartUsageOffsetH()
 	{
 		var offsetH = new StringReader("/|/|/h")
 		{
 			Cursor = 5
 		};
 
-		var results = _subject.GetSmartUsage(Get(offsetH), _source);
+        IDictionary<CommandNode<object>, string> results = _subject.GetSmartUsage(Get(offsetH), _source);
 		results.Should().Contain(new Dictionary<CommandNode<object>, string>
 		{
 			{Get("h 1"), "[1] i"},

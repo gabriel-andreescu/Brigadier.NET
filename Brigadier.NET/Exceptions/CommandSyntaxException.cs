@@ -4,7 +4,7 @@
 public class CommandSyntaxException : Exception
 {
 	public static readonly int ContextAmount = 10;
-	public static IBuiltInExceptionProvider BuiltInExceptions = new BuiltInExceptions();
+	public static IBuiltInExceptionProvider BuiltInExceptions { get; set; } = new BuiltInExceptions();
 
 	private readonly IMessage _message;
 
@@ -35,8 +35,8 @@ public class CommandSyntaxException : Exception
 	{
 		get
 		{
-			var message = _message.String;
-			var context = Context;
+            string message = _message.String;
+            string? context = Context;
 			if (context != null)
 			{
 				message += $" at position {Cursor}: {context}";
@@ -58,15 +58,15 @@ public class CommandSyntaxException : Exception
 			}
 
 			var builder = new StringBuilder();
-			var cursor = Math.Min(Input.Length, Cursor);
+            int cursor = Math.Min(Input.Length, Cursor);
 
 			if (cursor > ContextAmount)
 			{
 				builder.Append("...");
 			}
 
-			var start = Math.Max(0, cursor - ContextAmount);
-			builder.Append(Input.Substring(start, cursor - start));
+            int start = Math.Max(0, cursor - ContextAmount);
+			builder.Append(Input, start, cursor - start);
 			builder.Append("<--[HERE]");
 
 			return builder.ToString();

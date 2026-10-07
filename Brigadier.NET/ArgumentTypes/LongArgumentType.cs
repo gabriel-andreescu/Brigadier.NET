@@ -20,8 +20,8 @@ public class LongArgumentType : IArgumentType<long>
 	/// <exception cref="CommandSyntaxException" />
 	public long Parse(IStringReader reader)
 	{
-		var start = reader.Cursor;
-		var result = reader.ReadLong();
+        int start = reader.Cursor;
+        long result = reader.ReadLong();
 		if (result < Minimum) {
 			reader.Cursor = start;
 			throw CommandSyntaxException.BuiltInExceptions.LongTooLow().CreateWithContext(reader, result, Minimum);
@@ -36,12 +36,19 @@ public class LongArgumentType : IArgumentType<long>
 	public IEnumerable<string> Examples => LongExamples;
 
 
-	public override bool Equals(object? o)
+	public override bool Equals(object? obj)
 	{
-		if (this == o) return true;
-		if (o is not LongArgumentType that) return false;
+		if (this == obj)
+        {
+            return true;
+        }
 
-		return Maximum == that.Maximum && Minimum == that.Minimum;
+        if (obj is not LongArgumentType that)
+        {
+            return false;
+        }
+
+        return Maximum == that.Maximum && Minimum == that.Minimum;
 	}
 
 	public override int GetHashCode()

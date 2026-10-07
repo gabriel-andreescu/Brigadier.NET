@@ -43,9 +43,9 @@ public readonly struct StringRange : IEquatable<StringRange>
 
 	public int Length => End - Start;
 
-	public override bool Equals(object? o)
+	public override bool Equals(object? obj)
 	{
-		if (o is not StringRange that) {
+		if (obj is not StringRange that) {
 			return false;
 		}
 
@@ -56,6 +56,10 @@ public readonly struct StringRange : IEquatable<StringRange>
 	{
 		return HashCode.Combine(Start, End);
 	}
+
+	public static bool operator ==(StringRange left, StringRange right) => left.Equals(right);
+
+	public static bool operator !=(StringRange left, StringRange right) => !left.Equals(right);
 
 	public override string ToString()
 	{

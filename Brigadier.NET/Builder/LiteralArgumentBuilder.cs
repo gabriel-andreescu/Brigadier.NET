@@ -19,11 +19,6 @@ public class LiteralArgumentBuilder<TSource> : ArgumentBuilder<TSource, LiteralA
 		Literal = literal;
 	}
 
-	public static LiteralArgumentBuilder<TSource> LiteralArgument(string name)
-	{
-		return new LiteralArgumentBuilder<TSource>(name);
-	}
-
 	public string Literal { get; }
 
 	public override LiteralCommandNode<TSource> Build()
@@ -33,7 +28,7 @@ public class LiteralArgumentBuilder<TSource> : ArgumentBuilder<TSource, LiteralA
 			Description = Description
 		};
 
-		foreach (var argument in Arguments)
+		foreach (CommandNode<TSource> argument in Arguments)
 		{
 			result.AddChild(argument);
 		}

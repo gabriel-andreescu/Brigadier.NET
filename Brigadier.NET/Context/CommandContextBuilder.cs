@@ -5,7 +5,7 @@ namespace Brigadier.NET.Context;
 [PublicAPI]
 public class CommandContextBuilder<TSource>
 {
-	private readonly IDictionary<string, IParsedArgument> _arguments;
+	private readonly Dictionary<string, IParsedArgument> _arguments;
 	private RedirectModifier<TSource>? _modifier;
 	private bool _forks;
 
@@ -89,7 +89,7 @@ public class CommandContextBuilder<TSource>
 	{
 		get
 		{
-			var result = this;
+            CommandContextBuilder<TSource> result = this;
 			while (result.Child != null)
 			{
 				result = result.Child;
@@ -124,7 +124,7 @@ public class CommandContextBuilder<TSource>
 				}
 				else if (Nodes.Count > 0)
 				{
-					var last = Nodes[^1];
+                    ParsedCommandNode<TSource> last = Nodes[^1];
 					return new SuggestionContext<TSource>(last.Node, last.Range.End + 1);
 				}
 				else
@@ -134,10 +134,10 @@ public class CommandContextBuilder<TSource>
 			}
 			else
 			{
-				var prev = RootNode;
-				foreach (var node in Nodes)
+                CommandNode<TSource> prev = RootNode;
+				foreach (ParsedCommandNode<TSource> node in Nodes)
 				{
-					var nodeRange = node.Range;
+                    StringRange nodeRange = node.Range;
 					if (nodeRange.Start <= cursor && cursor <= nodeRange.End)
 					{
 						return new SuggestionContext<TSource>(prev, nodeRange.Start);

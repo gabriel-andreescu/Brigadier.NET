@@ -86,13 +86,13 @@ public class StringReader : IStringReader
 	/// <exception cref="CommandSyntaxException" />
 	public int ReadInt()
 	{
-		var start = Cursor;
+        int start = Cursor;
 		while (CanRead() && IsAllowedNumber(Peek()))
 		{
 			Skip();
 		}
 
-		var span = String.AsSpan(start, Cursor - start);
+        ReadOnlySpan<char> span = String.AsSpan(start, Cursor - start);
 		if (span.Length == 0)
 		{
 			throw CommandSyntaxException.BuiltInExceptions.ReaderExpectedInt().CreateWithContext(this);
@@ -112,13 +112,13 @@ public class StringReader : IStringReader
 	/// <exception cref="CommandSyntaxException" />
 	public long ReadLong()
 	{
-		var start = Cursor;
+        int start = Cursor;
 		while (CanRead() && IsAllowedNumber(Peek()))
 		{
 			Skip();
 		}
 
-		var span = String.AsSpan(start, Cursor - start);
+        ReadOnlySpan<char> span = String.AsSpan(start, Cursor - start);
 		if (span.Length == 0)
 		{
 			throw CommandSyntaxException.BuiltInExceptions.ReaderExpectedLong().CreateWithContext(this);
@@ -138,13 +138,13 @@ public class StringReader : IStringReader
 	/// <exception cref="CommandSyntaxException" />
 	public double ReadDouble()
 	{
-		var start = Cursor;
+        int start = Cursor;
 		while (CanRead() && IsAllowedNumber(Peek()))
 		{
 			Skip();
 		}
 
-		var span = String.AsSpan(start, Cursor - start);
+        ReadOnlySpan<char> span = String.AsSpan(start, Cursor - start);
 		if (span.Length == 0)
 		{
 			throw CommandSyntaxException.BuiltInExceptions.ReaderExpectedDouble().CreateWithContext(this);
@@ -164,13 +164,13 @@ public class StringReader : IStringReader
 	/// <exception cref="CommandSyntaxException" />
 	public float ReadFloat()
 	{
-		var start = Cursor;
+        int start = Cursor;
 		while (CanRead() && IsAllowedNumber(Peek()))
 		{
 			Skip();
 		}
 
-		var span = String.AsSpan(start, Cursor - start);
+        ReadOnlySpan<char> span = String.AsSpan(start, Cursor - start);
 		if (span.Length == 0)
 		{
 			throw CommandSyntaxException.BuiltInExceptions.ReaderExpectedFloat().CreateWithContext(this);
@@ -198,13 +198,13 @@ public class StringReader : IStringReader
 
 	public string ReadUnquotedString()
 	{
-		var start = Cursor;
+        int start = Cursor;
 		while (CanRead() && IsAllowedInUnquotedString(Peek()))
 		{
 			Skip();
 		}
 
-		var span = String.AsSpan(start, Cursor - start);
+        ReadOnlySpan<char> span = String.AsSpan(start, Cursor - start);
 		return span.ToString();
 	}
 
@@ -215,7 +215,7 @@ public class StringReader : IStringReader
 		{
 			return "";
 		}
-		var next = Peek();
+        char next = Peek();
 		if (!IsQuotedStringStart(next))
 		{
 			throw CommandSyntaxException.BuiltInExceptions.ReaderExpectedStartOfQuote().CreateWithContext(this);
@@ -228,10 +228,10 @@ public class StringReader : IStringReader
 	private string ReadStringUntil(char terminator)
 	{
 		var result = new StringBuilder();
-		var escaped = false;
+        bool escaped = false;
 		while (CanRead())
 		{
-			var c = Next();
+            char c = Next();
 			if (escaped)
 			{
 				if (c == terminator || c == SyntaxEscape)
@@ -269,7 +269,7 @@ public class StringReader : IStringReader
 		{
 			return "";
 		}
-		var next = Peek();
+        char next = Peek();
 		if (IsQuotedStringStart(next))
 		{
 			Skip();
@@ -281,18 +281,18 @@ public class StringReader : IStringReader
 	/// <exception cref="CommandSyntaxException" />
 	public bool ReadBoolean()
 	{
-		var start = Cursor;
-		var value = ReadString();
+        int start = Cursor;
+        string value = ReadString();
 		if (value.Length == 0)
 		{
 			throw CommandSyntaxException.BuiltInExceptions.ReaderExpectedBool().CreateWithContext(this);
 		}
 
-		if (value.Equals("true"))
+		if (value.Equals("true", StringComparison.Ordinal))
 		{
 			return true;
 		}
-		else if (value.Equals("false"))
+		else if (value.Equals("false", StringComparison.Ordinal))
 		{
 			return false;
 		}

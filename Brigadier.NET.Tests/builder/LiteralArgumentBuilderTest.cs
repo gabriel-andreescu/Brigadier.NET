@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using Brigadier.NET.Builder;
+using Brigadier.NET.Tree;
 using FluentAssertions;
 using NSubstitute;
 using Xunit;
@@ -19,21 +20,21 @@ public class LiteralArgumentBuilderTest {
 
 	[Fact]
 	public void TestBuild(){
-		var node = _builder.Build();
+        LiteralCommandNode<object> node = _builder.Build();
 
 		node.Literal.Should().Be("foo");
 	}
 
 	[Fact]
 	public void TestBuildWithDescription(){
-		var node = _builder.Describes("Says foo.").Build();
+        LiteralCommandNode<object> node = _builder.Describes("Says foo.").Build();
 
 		node.Description!.String.Should().Be("Says foo.");
 	}
 
 	[Fact]
 	public void TestBuildWithExecutor(){
-		var node = _builder.Executes(_command).Build();
+        LiteralCommandNode<object> node = _builder.Executes(_command).Build();
 
 		node.Literal.Should().Be("foo");
 		node.Command.Should().Be(_command);
@@ -44,7 +45,7 @@ public class LiteralArgumentBuilderTest {
 	{
 		_builder.Then(r => r.Argument("bar", Arguments.Integer()));
 		_builder.Then(r => r.Argument("baz", Arguments.Integer()));
-		var node = _builder.Build();
+        LiteralCommandNode<object> node = _builder.Build();
 
 		node.Children.Should().HaveCount(2);
 	}

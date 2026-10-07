@@ -7,10 +7,12 @@ using Brigadier.NET;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Tree;
 
+namespace Brigadier.NET.Benchmarks;
+
 [MarkdownExporterAttribute.GitHub]
 [MemoryDiagnoser]
 public class ParsingBenchmarks {
-    private CommandDispatcher<object> subject;
+    private CommandDispatcher<object> subject = null!;
 
     [GlobalSetup]
     public void setup() {
@@ -83,22 +85,17 @@ public class ParsingBenchmarks {
     }
 
     [Benchmark]
-	public void parse_a1i() {
+	public void parseA1i() {
         subject.Parse("a 1 i", new Object());
     }
 
     [Benchmark]
-	public void parse_c() {
+	public void parseC() {
         subject.Parse("c", new Object());
     }
 
     [Benchmark]
-	public void parse_k1i() {
+	public void parseK1i() {
         subject.Parse("k 1 i", new Object());
-    }
-
-    [Benchmark]
-	public void parse_() {
-        subject.Parse("c", new Object());
     }
 }

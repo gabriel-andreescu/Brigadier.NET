@@ -21,8 +21,8 @@ public class DoubleArgumentType : IArgumentType<double>
 	/// <exception cref="CommandSyntaxException" />
 	public double Parse(IStringReader reader) 
 	{
-		var start = reader.Cursor;
-		var result = reader.ReadDouble();
+        int start = reader.Cursor;
+        double result = reader.ReadDouble();
 		if (result < Minimum)
 		{
 			reader.Cursor = start;
@@ -39,12 +39,19 @@ public class DoubleArgumentType : IArgumentType<double>
 
 
 	[SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
-	public override bool Equals(object? o)
+	public override bool Equals(object? obj)
 	{
-		if (this == o) return true;
-		if (!(o is DoubleArgumentType)) return false;
+		if (this == obj)
+        {
+            return true;
+        }
 
-		var that = (DoubleArgumentType)o;
+        if (!(obj is DoubleArgumentType))
+        {
+            return false;
+        }
+
+        var that = (DoubleArgumentType)obj;
 		return Maximum == that.Maximum && Minimum == that.Minimum;
 	}
 

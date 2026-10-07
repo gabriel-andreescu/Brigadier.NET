@@ -23,8 +23,8 @@ public class LiteralCommandNode<TSource> : CommandNode<TSource>, IEquatable<Lite
 
 	public override void Parse(StringReader reader, CommandContextBuilder<TSource> contextBuilder)
 	{
-		var start = reader.Cursor;
-		var end = Parse(reader);
+        int start = reader.Cursor;
+        int end = Parse(reader);
 
 		if (end > -1)
 		{
@@ -37,11 +37,11 @@ public class LiteralCommandNode<TSource> : CommandNode<TSource>, IEquatable<Lite
 
 	private int Parse(StringReader reader)
 	{
-		var start = reader.Cursor;
+        int start = reader.Cursor;
 		if (reader.CanRead(Literal.Length))
 		{
-			var end = start + Literal.Length;
-			if (reader.String.Substring(start, end - start).Equals(Literal))
+            int end = start + Literal.Length;
+			if (reader.String.AsSpan(start, end - start).SequenceEqual(Literal.AsSpan()))
 			{
 				reader.Cursor = end;
 				if (!reader.CanRead() || reader.Peek() == ' ')
@@ -59,7 +59,7 @@ public class LiteralCommandNode<TSource> : CommandNode<TSource>, IEquatable<Lite
 
 	public override Task<Suggestions> ListSuggestions(CommandContext<TSource> context, SuggestionsBuilder builder)
 	{
-		if (Literal.ToLower().StartsWith(builder.RemainingLowerCase))
+		if (LiteralLowerCase.StartsWith(builder.RemainingLowerCase, StringComparison.Ordinal))
 		{
 			return (Description == null ? builder.Suggest(Literal) : builder.Suggest(Literal, Description)).BuildAsync();
 		}
@@ -76,16 +76,32 @@ public class LiteralCommandNode<TSource> : CommandNode<TSource>, IEquatable<Lite
 
 	public override bool Equals(object? obj)
 	{
-		if (ReferenceEquals(null, obj)) return false;
-		if (ReferenceEquals(this, obj)) return true;
-		return obj is LiteralCommandNode<TSource> other && Equals(other);
+		if (ReferenceEquals(null, obj))
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, obj))
+        {
+            return true;
+        }
+
+        return obj is LiteralCommandNode<TSource> other && Equals(other);
 	}
 
 	public bool Equals(LiteralCommandNode<TSource>? other)
 	{
-		if (ReferenceEquals(null, other)) return false;
-		if (ReferenceEquals(this, other)) return true;
-		return string.Equals(Literal, other.Literal);
+		if (ReferenceEquals(null, other))
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
+        return string.Equals(Literal, other.Literal, StringComparison.Ordinal);
 	}
 
 	public override int GetHashCode()
@@ -98,7 +114,7 @@ public class LiteralCommandNode<TSource> : CommandNode<TSource>, IEquatable<Lite
 
 	public override IArgumentBuilder<TSource, CommandNode<TSource>> CreateBuilder()
 	{
-		var builder = LiteralArgumentBuilder<TSource>.LiteralArgument(Literal);
+		var builder = new LiteralArgumentBuilder<TSource>(Literal);
 		builder.Requires(Requirement);
 		builder.Forward(Redirect, RedirectModifier, IsFork);
 		if (Command != null)
@@ -114,7 +130,6 @@ public class LiteralCommandNode<TSource> : CommandNode<TSource>, IEquatable<Lite
 		return builder;
 	}
 
-	protected override string SortedKey => Literal;
 
 	public override IEnumerable<string> Examples => [Literal];
 }

@@ -11,20 +11,20 @@ public class ContextChainTest
 	[Fact]
 	public void ExecuteAllForSingleCommand()
 	{
-		var consumer = Substitute.For<ResultConsumer<object>>();
-		var command = Substitute.For<Command<object>>();
+        ResultConsumer<object> consumer = Substitute.For<ResultConsumer<object>>();
+        Command<object> command = Substitute.For<Command<object>>();
 
 		command.Invoke(Arg.Any<CommandContext<object>>()).Returns(4);
 		
 		var dispatcher = new CommandDispatcher<object>();
 		dispatcher.Register(l => l.Literal("foo").Executes(command));
-		var source = "compile_source";
+        string source = "compile_source";
 
-		var parse = dispatcher.Parse("foo", source);
-		var topContext = parse.Context.Build("foo");
-		topContext.TryFlatten(out var chain).Should().BeTrue();
+        ParseResults<object> parse = dispatcher.Parse("foo", source);
+        CommandContext<object> topContext = parse.Context.Build("foo");
+		topContext.TryFlatten(out ContextChain<object>? chain).Should().BeTrue();
 
-		var runtimeSource = "runtime_source";
+        string runtimeSource = "runtime_source";
 		chain!.ExecuteAll(runtimeSource, consumer).Should().Be(4);
 
 		command.Received().Invoke(Arg.Is<CommandContext<object>>(c => ReferenceEquals(c.Source, runtimeSource)));
@@ -39,23 +39,23 @@ public class ContextChainTest
 	[Fact]
 	public void ExecuteAllForRedirectedCommand()
 	{
-		var consumer = Substitute.For<ResultConsumer<object>>();
-		var command = Substitute.For<Command<object>>();
+        ResultConsumer<object> consumer = Substitute.For<ResultConsumer<object>>();
+        Command<object> command = Substitute.For<Command<object>>();
 
 		command.Invoke(Arg.Any<CommandContext<object>>()).Returns(4);
-		
-		var redirectedSource = "redirected_source";
+
+        string redirectedSource = "redirected_source";
 
 		var dispatcher = new CommandDispatcher<object>();
 		dispatcher.Register(l => l.Literal("foo").Executes(command));
 		dispatcher.Register(l => l.Literal("bar").Redirect(dispatcher.Root, _ => redirectedSource ));
-		var source = "compile_source";
+        string source = "compile_source";
 
-		var parse = dispatcher.Parse("bar foo", source);
-		var topContext = parse.Context.Build("bar foo");
-		topContext.TryFlatten(out var chain).Should().BeTrue();
+        ParseResults<object> parse = dispatcher.Parse("bar foo", source);
+        CommandContext<object> topContext = parse.Context.Build("bar foo");
+		topContext.TryFlatten(out ContextChain<object>? chain).Should().BeTrue();
 
-		var runtimeSource = "runtime_source";
+        string runtimeSource = "runtime_source";
 		chain!.ExecuteAll(runtimeSource, consumer).Should().Be(4);
 
 		command.Received().Invoke(Arg.Is<CommandContext<object>>(c => ReferenceEquals(c.Source, redirectedSource)));
@@ -72,11 +72,11 @@ public class ContextChainTest
 	{
 		var dispatcher = new CommandDispatcher<object>();
 		dispatcher.Register(l => l.Literal("foo").Executes(_ => 1));
-		var source = new object();
+        object source = new object();
 
-		var result = dispatcher.Parse("foo", source);
-		var topContext = result.Context.Build("foo");
-		topContext.TryFlatten(out var stage0).Should().BeTrue();
+        ParseResults<object> result = dispatcher.Parse("foo", source);
+        CommandContext<object> topContext = result.Context.Build("foo");
+		topContext.TryFlatten(out ContextChain<object>? stage0).Should().BeTrue();
 
 		stage0!.CurrentStage.Should().Be(ContextChain<object>.Stage.Execute);
 		stage0.TopContext.Should().Be(topContext);
@@ -89,21 +89,21 @@ public class ContextChainTest
 		var dispatcher = new CommandDispatcher<object>();
 		dispatcher.Register(l => l.Literal("foo").Executes(_ => 1));
 		dispatcher.Register(l => l.Literal("bar").Redirect(dispatcher.Root));
-		var source = new object();
+        object source = new object();
 
-		var result = dispatcher.Parse("bar bar foo", source);
-		var topContext = result.Context.Build("bar bar foo");
-		topContext.TryFlatten(out var stage0).Should().BeTrue();
+        ParseResults<object> result = dispatcher.Parse("bar bar foo", source);
+        CommandContext<object> topContext = result.Context.Build("bar bar foo");
+		topContext.TryFlatten(out ContextChain<object>? stage0).Should().BeTrue();
 
 		stage0!.CurrentStage.Should().Be(ContextChain<object>.Stage.Modify);
 		stage0.TopContext.Should().Be(topContext);
 
-		var stage1 = stage0.NextStage();
+        ContextChain<object>? stage1 = stage0.NextStage();
 		stage1.Should().NotBeNull();
 		stage1!.CurrentStage.Should().Be(ContextChain<object>.Stage.Modify);
 		stage1.TopContext.Should().Be(topContext.Child);
 
-		var stage2 = stage1.NextStage();
+        ContextChain<object>? stage2 = stage1.NextStage();
 		stage2.Should().NotBeNull();
 		stage2!.CurrentStage.Should().Be(ContextChain<object>.Stage.Execute);
 		stage2.TopContext.Should().Be(topContext.Child!.Child);
@@ -118,9 +118,9 @@ public class ContextChainTest
 		dispatcher.Register(l => l.Literal("foo").Executes(_ => 1));
 		dispatcher.Register(l => l.Literal("bar").Redirect(dispatcher.Root));
 
-		var source = new object();
-		var topContext = dispatcher.Parse("bar bar", source).Context.Build("bar bar");
-		ContextChain<object>.TryFlatten(topContext, out var flattened).Should().BeFalse();
+        object source = new object();
+        CommandContext<object> topContext = dispatcher.Parse("bar bar", source).Context.Build("bar bar");
+		topContext.TryFlatten(out ContextChain<object>? flattened).Should().BeFalse();
 		flattened.Should().BeNull();
 	}
 }

@@ -19,11 +19,11 @@ public class BoolArgumentType : IArgumentType<bool>
 
 	public Task<Suggestions> ListSuggestions<TSource>(CommandContext<TSource> context, SuggestionsBuilder builder)
 	{
-		if ("true".StartsWith(builder.RemainingLowerCase))
+		if ("true".StartsWith(builder.RemainingLowerCase, StringComparison.Ordinal))
 		{
 			builder.Suggest("true");
 		}
-		if ("false".StartsWith(builder.RemainingLowerCase))
+		if ("false".StartsWith(builder.RemainingLowerCase, StringComparison.Ordinal))
 		{
 			builder.Suggest("false");
 		}

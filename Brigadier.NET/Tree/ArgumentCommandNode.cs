@@ -41,8 +41,8 @@ public class ArgumentCommandNode<TSource, T> : ArgumentCommandNode<TSource>, IEq
 	/// <exception>CommandSyntaxException</exception>
 	public override void Parse(StringReader reader, CommandContextBuilder<TSource> contextBuilder)
 	{
-		var start = reader.Cursor;
-		var result = Type.Parse(reader, contextBuilder.Source);
+        int start = reader.Cursor;
+		T result = Type.Parse(reader, contextBuilder.Source);
 		var parsed = new ParsedArgument<TSource, T>(start, reader.Cursor, result);
 
 		contextBuilder.WithArgument(_name, parsed);
@@ -63,7 +63,7 @@ public class ArgumentCommandNode<TSource, T> : ArgumentCommandNode<TSource>, IEq
 
 	public override IArgumentBuilder<TSource, CommandNode<TSource>> CreateBuilder()
 	{
-		var builder = RequiredArgumentBuilder<TSource, T>.RequiredArgument(_name, Type);
+		var builder = new RequiredArgumentBuilder<TSource, T>(_name, Type);
 		builder.Requires(Requirement);
 		builder.Forward(Redirect, RedirectModifier, IsFork);
 		builder.Suggests(CustomSuggestions);
@@ -96,16 +96,32 @@ public class ArgumentCommandNode<TSource, T> : ArgumentCommandNode<TSource>, IEq
 
 	public override bool Equals(object? obj)
 	{
-		if (ReferenceEquals(null, obj)) return false;
-		if (ReferenceEquals(this, obj)) return true;
-		return obj is ArgumentCommandNode<TSource, T> other && Equals(other);
+		if (ReferenceEquals(null, obj))
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, obj))
+        {
+            return true;
+        }
+
+        return obj is ArgumentCommandNode<TSource, T> other && Equals(other);
 	}
 
 	public bool Equals(ArgumentCommandNode<TSource, T>? other)
 	{
-		if (ReferenceEquals(null, other)) return false;
-		if (ReferenceEquals(this, other)) return true;
-		return string.Equals(_name, other._name) && Equals(Type, other.Type);
+		if (ReferenceEquals(null, other))
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
+        return string.Equals(_name, other._name, StringComparison.Ordinal) && Equals(Type, other.Type);
 	}
 
 	public override int GetHashCode()
@@ -113,7 +129,6 @@ public class ArgumentCommandNode<TSource, T> : ArgumentCommandNode<TSource>, IEq
 		return HashCode.Combine(_name, Type);
 	}
 
-	protected override string SortedKey => _name;
 
 	public override IEnumerable<string> Examples => Type.Examples;
 

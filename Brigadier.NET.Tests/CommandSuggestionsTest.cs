@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
+using Brigadier.NET.Suggestion;
+using Brigadier.NET.Tree;
 using FluentAssertions;
 using NSubstitute;
 using Xunit;
@@ -21,11 +23,11 @@ public class CommandSuggestionsTest {
 	}
 
 	private async Task TestSuggestions(string contents, int cursor, StringRange range, params string[] suggestions) {
-		var result = await _subject.GetCompletionSuggestions(_subject.Parse(contents, _source), cursor);
+        Suggestions result = await _subject.GetCompletionSuggestions(_subject.Parse(contents, _source), cursor);
 		result.Range.Should().BeEquivalentTo(range);
 
 		var expected = new List<Suggestion.Suggestion>();
-		foreach (var suggestion in suggestions) {
+		foreach (string suggestion in suggestions) {
 			expected.Add(new Suggestion.Suggestion(range, suggestion));
 		}
 
@@ -41,55 +43,55 @@ public class CommandSuggestionsTest {
 	}
 
 	[Fact]
-	public async Task getCompletionSuggestions_rootCommands(){
+	public async Task getCompletionSuggestionsRootCommands(){
 		_subject.Register(r => r.Literal("foo"));
 		_subject.Register(r => r.Literal("bar"));
 		_subject.Register(r => r.Literal("baz"));
 
-		var result = await _subject.GetCompletionSuggestions(_subject.Parse("", _source));
+        Suggestions result = await _subject.GetCompletionSuggestions(_subject.Parse("", _source));
 
 		result.Range.Should().BeEquivalentTo(StringRange.At(0));
 		result.List.Should().BeEquivalentTo(new List<Suggestion.Suggestion> {new Suggestion.Suggestion(StringRange.At(0), "bar"), new Suggestion.Suggestion(StringRange.At(0), "baz"), new Suggestion.Suggestion(StringRange.At(0), "foo")});
 	}
 
 	[Fact]
-	public async Task getCompletionSuggestions_rootCommands_withInputOffset(){
+	public async Task getCompletionSuggestionsRootCommandsWithInputOffset(){
 		_subject.Register(r => r.Literal("foo"));
 		_subject.Register(r => r.Literal("bar"));
 		_subject.Register(r => r.Literal("baz"));
 
-		var result = await _subject.GetCompletionSuggestions(_subject.Parse(InputWithOffset("OOO", 3), _source));
+        Suggestions result = await _subject.GetCompletionSuggestions(_subject.Parse(InputWithOffset("OOO", 3), _source));
 
 		result.Range.Should().BeEquivalentTo(StringRange.At(3));
 		result.List.Should().BeEquivalentTo(new List<Suggestion.Suggestion> {new Suggestion.Suggestion(StringRange.At(3), "bar"), new Suggestion.Suggestion(StringRange.At(3), "baz"), new Suggestion.Suggestion(StringRange.At(3), "foo")});
 	}
 
 	[Fact]
-	public async Task getCompletionSuggestions_rootCommands_partial(){
+	public async Task getCompletionSuggestionsRootCommandsPartial(){
 		_subject.Register(r => r.Literal("foo"));
 		_subject.Register(r => r.Literal("bar"));
 		_subject.Register(r => r.Literal("baz"));
 
-		var result = await _subject.GetCompletionSuggestions(_subject.Parse("b", _source));
+        Suggestions result = await _subject.GetCompletionSuggestions(_subject.Parse("b", _source));
 
 		result.Range.Should().BeEquivalentTo(StringRange.Between(0, 1));
 		result.List.Should().BeEquivalentTo(new List<Suggestion.Suggestion> {new Suggestion.Suggestion(StringRange.Between(0, 1), "bar"), new Suggestion.Suggestion(StringRange.Between(0, 1), "baz")});
 	}
 
 	[Fact]
-	public async Task getCompletionSuggestions_rootCommands_partial_withInputOffset(){
+	public async Task getCompletionSuggestionsRootCommandsPartialWithInputOffset(){
 		_subject.Register(r => r.Literal("foo"));
 		_subject.Register(r => r.Literal("bar"));
 		_subject.Register(r => r.Literal("baz"));
 
-		var result = await _subject.GetCompletionSuggestions(_subject.Parse(InputWithOffset("Zb", 1), _source));
+        Suggestions result = await _subject.GetCompletionSuggestions(_subject.Parse(InputWithOffset("Zb", 1), _source));
 
 		result.Range.Should().BeEquivalentTo(StringRange.Between(1, 2));
 		result.List.Should().BeEquivalentTo(new List<Suggestion.Suggestion> {new Suggestion.Suggestion(StringRange.Between(1, 2), "bar"), new Suggestion.Suggestion(StringRange.Between(1, 2), "baz")});
 	}
 
 	[Fact]
-	public async Task getCompletionSuggestions_SubCommands(){
+	public async Task getCompletionSuggestionsSubCommands(){
 		_subject.Register(r =>
 			r.Literal("parent")
 				.Then(r.Literal("foo"))
@@ -97,14 +99,14 @@ public class CommandSuggestionsTest {
 				.Then(r.Literal("baz"))
 		);
 
-		var result = await _subject.GetCompletionSuggestions(_subject.Parse("parent ", _source));
+        Suggestions result = await _subject.GetCompletionSuggestions(_subject.Parse("parent ", _source));
 
 		result.Range.Should().BeEquivalentTo(StringRange.At(7));
 		result.List.Should().BeEquivalentTo(new List<Suggestion.Suggestion> {new Suggestion.Suggestion(StringRange.At(7), "bar"), new Suggestion.Suggestion(StringRange.At(7), "baz"), new Suggestion.Suggestion(StringRange.At(7), "foo")});
 	}
 
 	[Fact]
-	public async Task getCompletionSuggestions_movingCursor_SubCommands(){
+	public async Task getCompletionSuggestionsMovingCursorSubCommands(){
 		_subject.Register(r =>
 			r.Literal("parent_one")
 				.Then(r.Literal("faz"))
@@ -129,7 +131,7 @@ public class CommandSuggestionsTest {
 	}
 
 	[Fact]
-	public async Task getCompletionSuggestions_SubCommands_partial(){
+	public async Task getCompletionSuggestionsSubCommandsPartial(){
 		_subject.Register(r =>
 			r.Literal("parent")
 				.Then(r.Literal("foo"))
@@ -137,15 +139,15 @@ public class CommandSuggestionsTest {
 				.Then(r.Literal("baz"))
 		);
 
-		var parse = _subject.Parse("parent b", _source);
-		var result = await _subject.GetCompletionSuggestions(parse);
+        ParseResults<object> parse = _subject.Parse("parent b", _source);
+        Suggestions result = await _subject.GetCompletionSuggestions(parse);
 
 		result.Range.Should().BeEquivalentTo(StringRange.Between(7, 8));
 		result.List.Should().BeEquivalentTo(new List<Suggestion.Suggestion> {new Suggestion.Suggestion(StringRange.Between(7, 8), "bar"), new Suggestion.Suggestion(StringRange.Between(7, 8), "baz")});
 	}
 
 	[Fact]
-	public async Task getCompletionSuggestions_SubCommands_partial_withInputOffset(){
+	public async Task getCompletionSuggestionsSubCommandsPartialWithInputOffset(){
 		_subject.Register(r =>
 			r.Literal("parent")
 				.Then(r.Literal("foo"))
@@ -153,40 +155,40 @@ public class CommandSuggestionsTest {
 				.Then(r.Literal("baz"))
 		);
 
-		var parse = _subject.Parse(InputWithOffset("junk parent b", 5), _source);
-		var result = await _subject.GetCompletionSuggestions(parse);
+        ParseResults<object> parse = _subject.Parse(InputWithOffset("junk parent b", 5), _source);
+        Suggestions result = await _subject.GetCompletionSuggestions(parse);
 
 		result.Range.Should().BeEquivalentTo(StringRange.Between(12, 13));
 		result.List.Should().BeEquivalentTo(new List<Suggestion.Suggestion> {new Suggestion.Suggestion(StringRange.Between(12, 13), "bar"), new Suggestion.Suggestion(StringRange.Between(12, 13), "baz")});
 	}
 
 	[Fact]
-	public async Task getCompletionSuggestions_redirect(){
-		var actual = _subject.Register(r => r.Literal("actual").Then(r.Literal("sub")));
+	public async Task getCompletionSuggestionsRedirect(){
+        LiteralCommandNode<object> actual = _subject.Register(r => r.Literal("actual").Then(r.Literal("sub")));
 		_subject.Register(r => r.Literal("redirect").Redirect(actual));
 
-		var parse = _subject.Parse("redirect ", _source);
-		var result = await _subject.GetCompletionSuggestions(parse);
+        ParseResults<object> parse = _subject.Parse("redirect ", _source);
+        Suggestions result = await _subject.GetCompletionSuggestions(parse);
 
 		result.Range.Should().BeEquivalentTo(StringRange.At(9));
 		result.List.Should().BeEquivalentTo(new List<Suggestion.Suggestion> {new Suggestion.Suggestion(StringRange.At(9), "sub")});
 	}
 
 	[Fact]
-	public async Task getCompletionSuggestions_redirectPartial(){
-		var actual = _subject.Register(r => r.Literal("actual").Then(r.Literal("sub")));
+	public async Task getCompletionSuggestionsRedirectPartial(){
+        LiteralCommandNode<object> actual = _subject.Register(r => r.Literal("actual").Then(r.Literal("sub")));
 		_subject.Register(r => r.Literal("redirect").Redirect(actual));
 
-		var parse = _subject.Parse("redirect s", _source);
-		var result = await _subject.GetCompletionSuggestions(parse);
+        ParseResults<object> parse = _subject.Parse("redirect s", _source);
+        Suggestions result = await _subject.GetCompletionSuggestions(parse);
 
 		result.Range.Should().BeEquivalentTo(StringRange.Between(9, 10));
 		result.List.Should().BeEquivalentTo(new List<Suggestion.Suggestion> {new Suggestion.Suggestion(StringRange.Between(9, 10), "sub")});
 	}
 
 	[Fact]
-	public async Task getCompletionSuggestions_movingCursor_redirect(){
-		var actualOne = _subject.Register(r => r.Literal("actual_one")
+	public async Task getCompletionSuggestionsMovingCursorRedirect(){
+        LiteralCommandNode<object> actualOne = _subject.Register(r => r.Literal("actual_one")
 			.Then(r.Literal("faz"))
 			.Then(r.Literal("fbz"))
 			.Then(r.Literal("gaz"))
@@ -209,21 +211,21 @@ public class CommandSuggestionsTest {
 	}
 
 	[Fact]
-	public async Task getCompletionSuggestions_redirectPartial_withInputOffset(){
-		var actual = _subject.Register(r => r.Literal("actual").Then(r.Literal("sub")));
+	public async Task getCompletionSuggestionsRedirectPartialWithInputOffset(){
+        LiteralCommandNode<object> actual = _subject.Register(r => r.Literal("actual").Then(r.Literal("sub")));
 		_subject.Register(r => r.Literal("redirect").Redirect(actual));
 
-		var parse = _subject.Parse(InputWithOffset("/redirect s", 1), _source);
-		var result = await _subject.GetCompletionSuggestions(parse);
+        ParseResults<object> parse = _subject.Parse(InputWithOffset("/redirect s", 1), _source);
+        Suggestions result = await _subject.GetCompletionSuggestions(parse);
 
 		result.Range.Should().BeEquivalentTo(StringRange.Between(10, 11));
 		result.List.Should().BeEquivalentTo(new List<Suggestion.Suggestion> {new Suggestion.Suggestion(StringRange.Between(10, 11), "sub")});
 	}
 
 	[Fact]
-	public async Task getCompletionSuggestions_redirect_lots()
+	public async Task getCompletionSuggestionsRedirectLots()
 	{
-		var loop = _subject.Register(r => r.Literal("redirect"));
+        LiteralCommandNode<object> loop = _subject.Register(r => r.Literal("redirect"));
 		_subject.Register(r =>
 			r.Literal("redirect")
 				.Then(
@@ -235,16 +237,16 @@ public class CommandSuggestionsTest {
 				)
 		);
 
-		var result = await _subject.GetCompletionSuggestions(_subject.Parse("redirect loop 1 loop 02 loop 003 ", _source));
+        Suggestions result = await _subject.GetCompletionSuggestions(_subject.Parse("redirect loop 1 loop 02 loop 003 ", _source));
 
 		result.Range.Should().BeEquivalentTo(StringRange.At(33));
 		result.List.Should().BeEquivalentTo(new List<Suggestion.Suggestion> { new Suggestion.Suggestion(StringRange.At(33), "loop") });
 	}
 
 	[Fact]
-	public async Task getCompletionSuggestions_execute_simulation()
+	public async Task getCompletionSuggestionsExecuteSimulation()
 	{
-		var execute = _subject.Register(r => r.Literal("execute"));
+        LiteralCommandNode<object> execute = _subject.Register(r => r.Literal("execute"));
 		_subject.Register(r =>
 			r.Literal("execute")
 				.Then(
@@ -267,16 +269,16 @@ public class CommandSuggestionsTest {
 				)
 		);
 
-		var parse = _subject.Parse("execute as Dinnerbone as", _source);
-		var result = await _subject.GetCompletionSuggestions(parse);
+        ParseResults<object> parse = _subject.Parse("execute as Dinnerbone as", _source);
+        Suggestions result = await _subject.GetCompletionSuggestions(parse);
 
 		result.IsEmpty().Should().Be(true);
 	}
 
 	[Fact]
-	public async Task getCompletionSuggestions_execute_simulation_partial()
+	public async Task getCompletionSuggestionsExecuteSimulationPartial()
 	{
-		var execute = _subject.Register(r => r.Literal("execute"));
+        LiteralCommandNode<object> execute = _subject.Register(r => r.Literal("execute"));
 		_subject.Register(r =>
 			r.Literal("execute")
 				.Then(
@@ -296,8 +298,8 @@ public class CommandSuggestionsTest {
 				)
 		);
 
-		var parse = _subject.Parse("execute as bar as ", _source);
-		var result = await _subject.GetCompletionSuggestions(parse);
+        ParseResults<object> parse = _subject.Parse("execute as bar as ", _source);
+        Suggestions result = await _subject.GetCompletionSuggestions(parse);
 
 		result.Range.Should().BeEquivalentTo(StringRange.At(18));
 		result.List.Should().BeEquivalentTo(new List<Suggestion.Suggestion>

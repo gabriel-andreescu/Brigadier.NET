@@ -13,7 +13,7 @@ public class StringArgumentTypeTest {
 	[Fact]
 	public void TestParseWord()
 	{
-		var reader = Substitute.For<IStringReader>();
+        IStringReader reader = Substitute.For<IStringReader>();
 		reader.ReadUnquotedString().Returns("hello");
 		Arguments.Word().Parse(reader).Should().BeEquivalentTo("hello");
 
@@ -22,7 +22,7 @@ public class StringArgumentTypeTest {
 
 	[Fact]
 	public void TestParseString(){
-		var reader = Substitute.For<IStringReader>();
+        IStringReader reader = Substitute.For<IStringReader>();
 		reader.ReadString().Returns("hello world");
 		Arguments.String().Parse(reader).Should().BeEquivalentTo("hello world");
 		reader.Received().ReadString();
@@ -41,28 +41,28 @@ public class StringArgumentTypeTest {
 	}
 
 	[Fact]
-	public void testEscapeIfRequired_notRequired(){
+	public void testEscapeIfRequiredNotRequired(){
 		StringArgumentType.EscapeIfRequired("hello").Should().BeEquivalentTo("hello");
 		StringArgumentType.EscapeIfRequired("").Should().BeEquivalentTo("");
 	}
 
 	[Fact]
-	public void testEscapeIfRequired_multipleWords(){
+	public void testEscapeIfRequiredMultipleWords(){
 		StringArgumentType.EscapeIfRequired("hello world").Should().BeEquivalentTo("\"hello world\"");
 	}
 
 	[Fact]
-	public void testEscapeIfRequired_quote(){
+	public void testEscapeIfRequiredQuote(){
 		StringArgumentType.EscapeIfRequired("hello \"world\"!").Should().BeEquivalentTo("\"hello \\\"world\\\"!\"");
 	}
 
 	[Fact]
-	public void testEscapeIfRequired_escapes(){
+	public void testEscapeIfRequiredEscapes(){
 		StringArgumentType.EscapeIfRequired("\\").Should().BeEquivalentTo("\"\\\\\"");
 	}
 
 	[Fact]
-	public void testEscapeIfRequired_singleQuote(){
+	public void testEscapeIfRequiredSingleQuote(){
 		StringArgumentType.EscapeIfRequired("\"").Should().BeEquivalentTo("\"\\\"\"");
 	}
 }

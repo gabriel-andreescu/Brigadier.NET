@@ -21,7 +21,7 @@ public class DynamicCommandSyntaxExceptionTypeTest {
 		{
 			Cursor = 5
 		};
-		var exception = _type.CreateWithContext(reader, "World");
+        CommandSyntaxException exception = _type.CreateWithContext(reader, "World");
 		exception.Type.Should().Be(_type);
 		exception.Input.Should().Be("Foo bar");
 		exception.Cursor.Should().Be(5);

@@ -5,8 +5,8 @@ namespace Brigadier.NET.Context;
 [PublicAPI]
 public class SuggestionContext<TSource>
 {
-	public readonly CommandNode<TSource> Parent;
-	public readonly int StartPos;
+	public CommandNode<TSource> Parent { get; }
+	public int StartPos { get; }
 
 	public SuggestionContext(CommandNode<TSource> parent, int startPos)
 	{

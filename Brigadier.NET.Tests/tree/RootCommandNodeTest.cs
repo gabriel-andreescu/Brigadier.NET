@@ -45,8 +45,8 @@ public class RootCommandNodeTest : AbstractCommandNodeTest {
 
 	[Fact]
 	public async Task TestSuggestions(){
-		var context = Substitute.For<CommandContext<object>>(null, null, null, null, null, null, null, null, null, false);
-		var result = await _node.ListSuggestions(context, new SuggestionsBuilder("", 0));
+        CommandContext<object> context = Substitute.For<CommandContext<object>>(null, null, null, null, null, null, null, null, null, false);
+        Suggestions result = await _node.ListSuggestions(context, new SuggestionsBuilder("", 0));
 		result.IsEmpty().Should().Be(true);
 	}
 
@@ -66,12 +66,11 @@ public class RootCommandNodeTest : AbstractCommandNodeTest {
 			)
 			.AddEqualityGroup(
 				new RootCommandNode<object> {
-					LiteralArgumentBuilder<object>.LiteralArgument("foo").Build(),
+					new LiteralArgumentBuilder<object>("foo").Build(),
 				},
 				new RootCommandNode<object> {
-					LiteralArgumentBuilder<object>.LiteralArgument("foo").Build()
+					new LiteralArgumentBuilder<object>("foo").Build()
 				}
-			)
-			.TestEquals();
+			);
 	}
 }

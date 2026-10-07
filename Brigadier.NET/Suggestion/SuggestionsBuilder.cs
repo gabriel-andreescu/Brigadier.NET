@@ -40,7 +40,7 @@ public class SuggestionsBuilder
 
 	public SuggestionsBuilder Suggest(string text)
 	{
-		if (text.Equals(Remaining))
+		if (text.Equals(Remaining, StringComparison.Ordinal))
 		{
 			return this;
 		}
@@ -50,7 +50,7 @@ public class SuggestionsBuilder
 
 	public SuggestionsBuilder Suggest(string text, IMessage tooltip)
 	{
-		if (text.Equals(Remaining))
+		if (text.Equals(Remaining, StringComparison.Ordinal))
 		{
 			return this;
 		}

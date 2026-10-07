@@ -16,7 +16,7 @@ public class SimpleCommandSyntaxExceptionTypeTest {
 		{
 			Cursor = 5
 		};
-		var exception = type.CreateWithContext(reader);
+        CommandSyntaxException exception = type.CreateWithContext(reader);
 		exception.Type.Should().Be(type);
 		exception.Input.Should().Be("Foo bar");
 		exception.Cursor.Should().Be(5);
@@ -24,20 +24,20 @@ public class SimpleCommandSyntaxExceptionTypeTest {
 
 
 	[Fact]
-	public void getContext_none(){
+	public void getContextNone(){
 		var exception = new CommandSyntaxException(Substitute.For<ICommandExceptionType>(), new LiteralMessage("error"));
 		exception.Context.Should().BeNull();
 	}
 
 	[Fact]
-	public void getContext_short(){
+	public void getContextShort(){
 		var exception = new CommandSyntaxException(Substitute.For<ICommandExceptionType>(), new LiteralMessage("error"), "Hello world!", 5);
 
 		exception.Context.Should().BeEquivalentTo("Hello<--[HERE]");
 	}
 
 	[Fact]
-	public void getContext_long(){
+	public void getContextLong(){
 		var exception = new CommandSyntaxException(Substitute.For<ICommandExceptionType>(), new LiteralMessage("error"), "Hello world! This has an error in it. Oh dear!", 20);
 		exception.Context.Should().BeEquivalentTo("...d! This ha<--[HERE]");
 	}

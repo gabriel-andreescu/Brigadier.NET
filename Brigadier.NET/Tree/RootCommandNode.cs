@@ -32,9 +32,17 @@ public class RootCommandNode<TSource> : CommandNode<TSource>, IEquatable<RootCom
 
 	public override bool Equals(object? obj)
 	{
-		if (ReferenceEquals(null, obj)) return false;
-		if (ReferenceEquals(this, obj)) return true;
-		return obj is RootCommandNode<TSource> other && Equals(other);
+		if (ReferenceEquals(null, obj))
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, obj))
+        {
+            return true;
+        }
+
+        return obj is RootCommandNode<TSource> other && Equals(other);
 	}
 
 	public bool Equals(RootCommandNode<TSource>? other)
@@ -52,9 +60,8 @@ public class RootCommandNode<TSource> : CommandNode<TSource>, IEquatable<RootCom
 		throw new InvalidOperationException("Cannot convert root into a builder");
 	}
 
-	protected override string SortedKey => string.Empty;
 
-	public override IEnumerable<string> Examples => new string[0];
+	public override IEnumerable<string> Examples => Array.Empty<string>();
 
 	public override string ToString() => "<root>";
 }
