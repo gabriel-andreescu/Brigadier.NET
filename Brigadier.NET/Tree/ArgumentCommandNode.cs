@@ -7,96 +7,116 @@ using Brigadier.NET.Suggestion;
 namespace Brigadier.NET.Tree;
 
 [PublicAPI]
-public abstract class ArgumentCommandNode<TSource> : CommandNode<TSource> {
-	protected ArgumentCommandNode(Command<TSource>? command, Predicate<TSource> requirement, CommandNode<TSource>? redirect, RedirectModifier<TSource>? modifier, bool forks) 
-		: base(command, requirement, redirect, modifier, forks)
-	{
-	}
+public abstract class ArgumentCommandNode<TSource> : CommandNode<TSource>
+{
+    protected ArgumentCommandNode(
+        Command<TSource>? command,
+        Predicate<TSource> requirement,
+        CommandNode<TSource>? redirect,
+        RedirectModifier<TSource>? modifier,
+        bool forks
+    )
+        : base(command, requirement, redirect, modifier, forks) { }
 }
 
 [PublicAPI]
-public class ArgumentCommandNode<TSource, T> : ArgumentCommandNode<TSource>, IEquatable<ArgumentCommandNode<TSource, T>> where T : notnull
+public class ArgumentCommandNode<TSource, T>
+    : ArgumentCommandNode<TSource>,
+        IEquatable<ArgumentCommandNode<TSource, T>>
+    where T : notnull
 {
-	private const string UsageArgumentOpen = "<";
-	private const string UsageArgumentClose = ">";
+    private const string UsageArgumentOpen = "<";
+    private const string UsageArgumentClose = ">";
 
-	private readonly string _name;
+    private readonly string _name;
 
-	public ArgumentCommandNode(string name, IArgumentType<T> type, Command<TSource>? command, Predicate<TSource> requirement, CommandNode<TSource>? redirect, RedirectModifier<TSource>? modifier, bool forks, SuggestionProvider<TSource>? customSuggestions) :
-		base(command, requirement, redirect, modifier, forks)
-	{
-		_name = name;
-		Type = type;
-		CustomSuggestions = customSuggestions;
-	}
+    public ArgumentCommandNode(
+        string name,
+        IArgumentType<T> type,
+        Command<TSource>? command,
+        Predicate<TSource> requirement,
+        CommandNode<TSource>? redirect,
+        RedirectModifier<TSource>? modifier,
+        bool forks,
+        SuggestionProvider<TSource>? customSuggestions
+    )
+        : base(command, requirement, redirect, modifier, forks)
+    {
+        _name = name;
+        Type = type;
+        CustomSuggestions = customSuggestions;
+    }
 
-	public IArgumentType<T> Type { get; }
+    public IArgumentType<T> Type { get; }
 
-	public override string Name => _name;
+    public override string Name => _name;
 
-	public override string UsageText => $"{UsageArgumentOpen}{Name}{UsageArgumentClose}";
+    public override string UsageText => $"{UsageArgumentOpen}{Name}{UsageArgumentClose}";
 
-	public SuggestionProvider<TSource>? CustomSuggestions { get; }
+    public SuggestionProvider<TSource>? CustomSuggestions { get; }
 
-	/// <exception>CommandSyntaxException</exception>
-	public override void Parse(StringReader reader, CommandContextBuilder<TSource> contextBuilder)
-	{
+    /// <exception>CommandSyntaxException</exception>
+    public override void Parse(StringReader reader, CommandContextBuilder<TSource> contextBuilder)
+    {
         int start = reader.Cursor;
-		T result = Type.Parse(reader, contextBuilder.Source);
-		var parsed = new ParsedArgument<TSource, T>(start, reader.Cursor, result);
+        T result = Type.Parse(reader, contextBuilder.Source);
+        var parsed = new ParsedArgument<TSource, T>(start, reader.Cursor, result);
 
-		contextBuilder.WithArgument(_name, parsed);
-		contextBuilder.WithNode(this, parsed.Range);
-	}
+        contextBuilder.WithArgument(_name, parsed);
+        contextBuilder.WithNode(this, parsed.Range);
+    }
 
-	public override Task<Suggestions> ListSuggestions(CommandContext<TSource> context, SuggestionsBuilder builder)
-	{
-		if (CustomSuggestions == null)
-		{
-			return Type.ListSuggestions(context, builder);
-		}
-		else
-		{
-			return CustomSuggestions(context, builder);
-		}
-	}
+    public override Task<Suggestions> ListSuggestions(
+        CommandContext<TSource> context,
+        SuggestionsBuilder builder
+    )
+    {
+        if (CustomSuggestions == null)
+        {
+            return Type.ListSuggestions(context, builder);
+        }
+        else
+        {
+            return CustomSuggestions(context, builder);
+        }
+    }
 
-	public override IArgumentBuilder<TSource, CommandNode<TSource>> CreateBuilder()
-	{
-		var builder = new RequiredArgumentBuilder<TSource, T>(_name, Type);
-		builder.Requires(Requirement);
-		builder.Forward(Redirect, RedirectModifier, IsFork);
-		builder.Suggests(CustomSuggestions);
-		if (Command != null)
-		{
-			builder.Executes(Command);
-		}
+    public override IArgumentBuilder<TSource, CommandNode<TSource>> CreateBuilder()
+    {
+        var builder = new RequiredArgumentBuilder<TSource, T>(_name, Type);
+        builder.Requires(Requirement);
+        builder.Forward(Redirect, RedirectModifier, IsFork);
+        builder.Suggests(CustomSuggestions);
+        if (Command != null)
+        {
+            builder.Executes(Command);
+        }
 
-		if (Description != null)
-		{
-			builder.Describes(Description);
-		}
+        if (Description != null)
+        {
+            builder.Describes(Description);
+        }
 
-		return builder;
-	}
+        return builder;
+    }
 
-	protected override bool IsValidInput(string input)
-	{
-		try
-		{
-			var reader = new StringReader(input);
-			Type.Parse(reader);
-			return !reader.CanRead() || reader.Peek() == ' ';
-		}
-		catch (CommandSyntaxException)
-		{
-			return false;
-		}
-	}
+    protected override bool IsValidInput(string input)
+    {
+        try
+        {
+            var reader = new StringReader(input);
+            Type.Parse(reader);
+            return !reader.CanRead() || reader.Peek() == ' ';
+        }
+        catch (CommandSyntaxException)
+        {
+            return false;
+        }
+    }
 
-	public override bool Equals(object? obj)
-	{
-		if (ReferenceEquals(null, obj))
+    public override bool Equals(object? obj)
+    {
+        if (ReferenceEquals(null, obj))
         {
             return false;
         }
@@ -107,11 +127,11 @@ public class ArgumentCommandNode<TSource, T> : ArgumentCommandNode<TSource>, IEq
         }
 
         return obj is ArgumentCommandNode<TSource, T> other && Equals(other);
-	}
+    }
 
-	public bool Equals(ArgumentCommandNode<TSource, T>? other)
-	{
-		if (ReferenceEquals(null, other))
+    public bool Equals(ArgumentCommandNode<TSource, T>? other)
+    {
+        if (ReferenceEquals(null, other))
         {
             return false;
         }
@@ -121,19 +141,19 @@ public class ArgumentCommandNode<TSource, T> : ArgumentCommandNode<TSource>, IEq
             return true;
         }
 
-        return string.Equals(_name, other._name, StringComparison.Ordinal) && Equals(Type, other.Type);
-	}
+        return string.Equals(_name, other._name, StringComparison.Ordinal)
+            && Equals(Type, other.Type);
+    }
 
-	public override int GetHashCode()
-	{
-		return HashCode.Combine(_name, Type);
-	}
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(_name, Type);
+    }
 
+    public override IEnumerable<string> Examples => Type.Examples;
 
-	public override IEnumerable<string> Examples => Type.Examples;
-
-	public override string ToString()
-	{
-		return $"<argument {_name}:{Type}>";
-	}
+    public override string ToString()
+    {
+        return $"<argument {_name}:{Type}>";
+    }
 }

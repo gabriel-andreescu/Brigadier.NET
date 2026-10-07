@@ -3,5 +3,5 @@
 [PublicAPI]
 public interface IMessage
 {
-	string String { get; }
+    string String { get; }
 }

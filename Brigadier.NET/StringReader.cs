@@ -6,311 +6,341 @@ namespace Brigadier.NET;
 [PublicAPI]
 public class StringReader : IStringReader
 {
-	private static readonly char SyntaxEscape = '\\';
-	private static readonly char SyntaxDoubleQuote = '"';
-	private static readonly char SyntaxSingleQuote = '\'';
+    private static readonly char SyntaxEscape = '\\';
+    private static readonly char SyntaxDoubleQuote = '"';
+    private static readonly char SyntaxSingleQuote = '\'';
 
-	public StringReader(StringReader other)
-	{
-		String = other.String;
-		Cursor = other.Cursor;
-	}
+    public StringReader(StringReader other)
+    {
+        String = other.String;
+        Cursor = other.Cursor;
+    }
 
-	public StringReader(string input)
-	{
-		String = input;
-	}
+    public StringReader(string input)
+    {
+        String = input;
+    }
 
+    public string String { get; }
 
-	public string String { get; }
+    public int Cursor { get; set; }
 
-	public int Cursor { get; set; }
+    public int RemainingLength => String.Length - Cursor;
 
-	public int RemainingLength => String.Length - Cursor;
+    public int TotalLength => String.Length;
 
+    public string Read => String.Substring(0, Cursor);
 
-	public int TotalLength => String.Length;
+    public string Remaining => String.Substring(Cursor);
 
+    public bool CanRead(int length) => Cursor + length <= String.Length;
 
-	public string Read => String.Substring(0, Cursor);
+    public bool CanRead() => CanRead(1);
 
+    public char Peek()
+    {
+        return String[Cursor];
+    }
 
-	public string Remaining => String.Substring(Cursor);
+    public char Peek(int offset)
+    {
+        return String[Cursor + offset];
+    }
 
+    public char Next()
+    {
+        return String[Cursor++];
+    }
 
-	public bool CanRead(int length) => Cursor + length <= String.Length;
+    public void Skip()
+    {
+        Cursor++;
+    }
 
+    private static bool IsAllowedNumber(char c)
+    {
+        return c >= '0' && c <= '9' || c == '.' || c == '-';
+    }
 
-	public bool CanRead() => CanRead(1);
+    private static bool IsQuotedStringStart(char c)
+    {
+        return c == SyntaxDoubleQuote || c == SyntaxSingleQuote;
+    }
 
+    public void SkipWhitespace()
+    {
+        while (CanRead() && char.IsWhiteSpace(Peek()))
+        {
+            Skip();
+        }
+    }
 
-	public char Peek()
-	{
-		return String[Cursor];
-	}
-
-
-	public char Peek(int offset)
-	{
-		return String[Cursor + offset];
-	}
-
-	public char Next()
-	{
-		return String[Cursor++];
-	}
-
-	public void Skip()
-	{
-		Cursor++;
-	}
-
-	private static bool IsAllowedNumber(char c)
-	{
-		return c >= '0' && c <= '9' || c == '.' || c == '-';
-	}
-
-	private static bool IsQuotedStringStart(char c)
-	{
-		return c == SyntaxDoubleQuote || c == SyntaxSingleQuote;
-	}
-
-	public void SkipWhitespace()
-	{
-		while (CanRead() && char.IsWhiteSpace(Peek()))
-		{
-			Skip();
-		}
-	}
-
-	/// <exception cref="CommandSyntaxException" />
-	public int ReadInt()
-	{
+    /// <exception cref="CommandSyntaxException" />
+    public int ReadInt()
+    {
         int start = Cursor;
-		while (CanRead() && IsAllowedNumber(Peek()))
-		{
-			Skip();
-		}
+        while (CanRead() && IsAllowedNumber(Peek()))
+        {
+            Skip();
+        }
 
         ReadOnlySpan<char> span = String.AsSpan(start, Cursor - start);
-		if (span.Length == 0)
-		{
-			throw CommandSyntaxException.BuiltInExceptions.ReaderExpectedInt().CreateWithContext(this);
-		}
+        if (span.Length == 0)
+        {
+            throw CommandSyntaxException
+                .BuiltInExceptions.ReaderExpectedInt()
+                .CreateWithContext(this);
+        }
 
-		try
-		{
-			return int.Parse(span, NumberStyles.Integer, CultureInfo.InvariantCulture);
-		}
-		catch (FormatException)
-		{
-			Cursor = start;
-			throw CommandSyntaxException.BuiltInExceptions.ReaderInvalidInt().CreateWithContext(this, span.ToString());
-		}
-	}
+        try
+        {
+            return int.Parse(span, NumberStyles.Integer, CultureInfo.InvariantCulture);
+        }
+        catch (FormatException)
+        {
+            Cursor = start;
+            throw CommandSyntaxException
+                .BuiltInExceptions.ReaderInvalidInt()
+                .CreateWithContext(this, span.ToString());
+        }
+    }
 
-	/// <exception cref="CommandSyntaxException" />
-	public long ReadLong()
-	{
+    /// <exception cref="CommandSyntaxException" />
+    public long ReadLong()
+    {
         int start = Cursor;
-		while (CanRead() && IsAllowedNumber(Peek()))
-		{
-			Skip();
-		}
+        while (CanRead() && IsAllowedNumber(Peek()))
+        {
+            Skip();
+        }
 
         ReadOnlySpan<char> span = String.AsSpan(start, Cursor - start);
-		if (span.Length == 0)
-		{
-			throw CommandSyntaxException.BuiltInExceptions.ReaderExpectedLong().CreateWithContext(this);
-		}
+        if (span.Length == 0)
+        {
+            throw CommandSyntaxException
+                .BuiltInExceptions.ReaderExpectedLong()
+                .CreateWithContext(this);
+        }
 
-		try
-		{
-			return long.Parse(span, NumberStyles.Integer, CultureInfo.InvariantCulture);
-		}
-		catch (FormatException)
-		{
-			Cursor = start;
-			throw CommandSyntaxException.BuiltInExceptions.ReaderInvalidLong().CreateWithContext(this, span.ToString());
-		}
-	}
+        try
+        {
+            return long.Parse(span, NumberStyles.Integer, CultureInfo.InvariantCulture);
+        }
+        catch (FormatException)
+        {
+            Cursor = start;
+            throw CommandSyntaxException
+                .BuiltInExceptions.ReaderInvalidLong()
+                .CreateWithContext(this, span.ToString());
+        }
+    }
 
-	/// <exception cref="CommandSyntaxException" />
-	public double ReadDouble()
-	{
+    /// <exception cref="CommandSyntaxException" />
+    public double ReadDouble()
+    {
         int start = Cursor;
-		while (CanRead() && IsAllowedNumber(Peek()))
-		{
-			Skip();
-		}
+        while (CanRead() && IsAllowedNumber(Peek()))
+        {
+            Skip();
+        }
 
         ReadOnlySpan<char> span = String.AsSpan(start, Cursor - start);
-		if (span.Length == 0)
-		{
-			throw CommandSyntaxException.BuiltInExceptions.ReaderExpectedDouble().CreateWithContext(this);
-		}
+        if (span.Length == 0)
+        {
+            throw CommandSyntaxException
+                .BuiltInExceptions.ReaderExpectedDouble()
+                .CreateWithContext(this);
+        }
 
-		try
-		{
-			return double.Parse(span, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture);
-		}
-		catch (FormatException)
-		{
-			Cursor = start;
-			throw CommandSyntaxException.BuiltInExceptions.ReaderInvalidDouble().CreateWithContext(this, span.ToString());
-		}
-	}
+        try
+        {
+            return double.Parse(
+                span,
+                NumberStyles.Float | NumberStyles.AllowThousands,
+                CultureInfo.InvariantCulture
+            );
+        }
+        catch (FormatException)
+        {
+            Cursor = start;
+            throw CommandSyntaxException
+                .BuiltInExceptions.ReaderInvalidDouble()
+                .CreateWithContext(this, span.ToString());
+        }
+    }
 
-	/// <exception cref="CommandSyntaxException" />
-	public float ReadFloat()
-	{
+    /// <exception cref="CommandSyntaxException" />
+    public float ReadFloat()
+    {
         int start = Cursor;
-		while (CanRead() && IsAllowedNumber(Peek()))
-		{
-			Skip();
-		}
+        while (CanRead() && IsAllowedNumber(Peek()))
+        {
+            Skip();
+        }
 
         ReadOnlySpan<char> span = String.AsSpan(start, Cursor - start);
-		if (span.Length == 0)
-		{
-			throw CommandSyntaxException.BuiltInExceptions.ReaderExpectedFloat().CreateWithContext(this);
-		}
+        if (span.Length == 0)
+        {
+            throw CommandSyntaxException
+                .BuiltInExceptions.ReaderExpectedFloat()
+                .CreateWithContext(this);
+        }
 
-		try
-		{
-			return float.Parse(span, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture);
-		}
-		catch (FormatException)
-		{
-			Cursor = start;
-			throw CommandSyntaxException.BuiltInExceptions.ReaderInvalidFloat().CreateWithContext(this, span.ToString());
-		}
-	}
+        try
+        {
+            return float.Parse(
+                span,
+                NumberStyles.Float | NumberStyles.AllowThousands,
+                CultureInfo.InvariantCulture
+            );
+        }
+        catch (FormatException)
+        {
+            Cursor = start;
+            throw CommandSyntaxException
+                .BuiltInExceptions.ReaderInvalidFloat()
+                .CreateWithContext(this, span.ToString());
+        }
+    }
 
-	public static bool IsAllowedInUnquotedString(char c)
-	{
-		return c >= '0' && c <= '9'
-		       || c >= 'A' && c <= 'Z'
-		       || c >= 'a' && c <= 'z'
-		       || c == '_' || c == '-'
-		       || c == '.' || c == '+';
-	}
+    public static bool IsAllowedInUnquotedString(char c)
+    {
+        return c >= '0' && c <= '9'
+            || c >= 'A' && c <= 'Z'
+            || c >= 'a' && c <= 'z'
+            || c == '_'
+            || c == '-'
+            || c == '.'
+            || c == '+';
+    }
 
-	public string ReadUnquotedString()
-	{
+    public string ReadUnquotedString()
+    {
         int start = Cursor;
-		while (CanRead() && IsAllowedInUnquotedString(Peek()))
-		{
-			Skip();
-		}
+        while (CanRead() && IsAllowedInUnquotedString(Peek()))
+        {
+            Skip();
+        }
 
         ReadOnlySpan<char> span = String.AsSpan(start, Cursor - start);
-		return span.ToString();
-	}
+        return span.ToString();
+    }
 
-	/// <exception cref="CommandSyntaxException" />
-	public string ReadQuotedString()
-	{
-		if (!CanRead())
-		{
-			return "";
-		}
+    /// <exception cref="CommandSyntaxException" />
+    public string ReadQuotedString()
+    {
+        if (!CanRead())
+        {
+            return "";
+        }
         char next = Peek();
-		if (!IsQuotedStringStart(next))
-		{
-			throw CommandSyntaxException.BuiltInExceptions.ReaderExpectedStartOfQuote().CreateWithContext(this);
-		}
+        if (!IsQuotedStringStart(next))
+        {
+            throw CommandSyntaxException
+                .BuiltInExceptions.ReaderExpectedStartOfQuote()
+                .CreateWithContext(this);
+        }
 
-		Skip();
-		return ReadStringUntil(next);
-	}
+        Skip();
+        return ReadStringUntil(next);
+    }
 
-	private string ReadStringUntil(char terminator)
-	{
-		var result = new StringBuilder();
+    private string ReadStringUntil(char terminator)
+    {
+        var result = new StringBuilder();
         bool escaped = false;
-		while (CanRead())
-		{
+        while (CanRead())
+        {
             char c = Next();
-			if (escaped)
-			{
-				if (c == terminator || c == SyntaxEscape)
-				{
-					result.Append(c);
-					escaped = false;
-				}
-				else
-				{
-					Cursor--;
-					throw CommandSyntaxException.BuiltInExceptions.ReaderInvalidEscape().CreateWithContext(this, c.ToString());
-				}
-			}
-			else if (c == SyntaxEscape)
-			{
-				escaped = true;
-			}
-			else if (c == terminator)
-			{
-				return result.ToString();
-			}
-			else
-			{
-				result.Append(c);
-			}
-		}
+            if (escaped)
+            {
+                if (c == terminator || c == SyntaxEscape)
+                {
+                    result.Append(c);
+                    escaped = false;
+                }
+                else
+                {
+                    Cursor--;
+                    throw CommandSyntaxException
+                        .BuiltInExceptions.ReaderInvalidEscape()
+                        .CreateWithContext(this, c.ToString());
+                }
+            }
+            else if (c == SyntaxEscape)
+            {
+                escaped = true;
+            }
+            else if (c == terminator)
+            {
+                return result.ToString();
+            }
+            else
+            {
+                result.Append(c);
+            }
+        }
 
-		throw CommandSyntaxException.BuiltInExceptions.ReaderExpectedEndOfQuote().CreateWithContext(this);
-	}
+        throw CommandSyntaxException
+            .BuiltInExceptions.ReaderExpectedEndOfQuote()
+            .CreateWithContext(this);
+    }
 
-	/// <exception cref="CommandSyntaxException" />
-	public string ReadString()
-	{
-		if (!CanRead())
-		{
-			return "";
-		}
+    /// <exception cref="CommandSyntaxException" />
+    public string ReadString()
+    {
+        if (!CanRead())
+        {
+            return "";
+        }
         char next = Peek();
-		if (IsQuotedStringStart(next))
-		{
-			Skip();
-			return ReadStringUntil(next);
-		}
-		return ReadUnquotedString();
-	}
+        if (IsQuotedStringStart(next))
+        {
+            Skip();
+            return ReadStringUntil(next);
+        }
+        return ReadUnquotedString();
+    }
 
-	/// <exception cref="CommandSyntaxException" />
-	public bool ReadBoolean()
-	{
+    /// <exception cref="CommandSyntaxException" />
+    public bool ReadBoolean()
+    {
         int start = Cursor;
         string value = ReadString();
-		if (value.Length == 0)
-		{
-			throw CommandSyntaxException.BuiltInExceptions.ReaderExpectedBool().CreateWithContext(this);
-		}
+        if (value.Length == 0)
+        {
+            throw CommandSyntaxException
+                .BuiltInExceptions.ReaderExpectedBool()
+                .CreateWithContext(this);
+        }
 
-		if (value.Equals("true", StringComparison.Ordinal))
-		{
-			return true;
-		}
-		else if (value.Equals("false", StringComparison.Ordinal))
-		{
-			return false;
-		}
-		else
-		{
-			Cursor = start;
-			throw CommandSyntaxException.BuiltInExceptions.ReaderInvalidBool().CreateWithContext(this, value);
-		}
-	}
+        if (value.Equals("true", StringComparison.Ordinal))
+        {
+            return true;
+        }
+        else if (value.Equals("false", StringComparison.Ordinal))
+        {
+            return false;
+        }
+        else
+        {
+            Cursor = start;
+            throw CommandSyntaxException
+                .BuiltInExceptions.ReaderInvalidBool()
+                .CreateWithContext(this, value);
+        }
+    }
 
-	/// <exception cref="CommandSyntaxException" />
-	public void Expect(char c)
-	{
-		if (!CanRead() || Peek() != c)
-		{
-			throw CommandSyntaxException.BuiltInExceptions.ReaderExpectedSymbol().CreateWithContext(this, c.ToString());
-		}
+    /// <exception cref="CommandSyntaxException" />
+    public void Expect(char c)
+    {
+        if (!CanRead() || Peek() != c)
+        {
+            throw CommandSyntaxException
+                .BuiltInExceptions.ReaderExpectedSymbol()
+                .CreateWithContext(this, c.ToString());
+        }
 
-		Skip();
-	}
+        Skip();
+    }
 }

@@ -5,43 +5,54 @@ namespace Brigadier.NET.ArgumentTypes;
 [PublicAPI]
 public class DoubleArgumentType : IArgumentType<double>
 {
-	private static readonly IEnumerable<string> DoubleExamples = ["0", "1.2", ".5", "-1", "-.5", "-1234.56"];
+    private static readonly IEnumerable<string> DoubleExamples =
+    [
+        "0",
+        "1.2",
+        ".5",
+        "-1",
+        "-.5",
+        "-1234.56",
+    ];
 
-	internal DoubleArgumentType(double minimum, double maximum)
-	{
-		Minimum = minimum;
-		Maximum = maximum;
-	}
+    internal DoubleArgumentType(double minimum, double maximum)
+    {
+        Minimum = minimum;
+        Maximum = maximum;
+    }
 
-	public double Minimum { get; }
+    public double Minimum { get; }
 
-	public double Maximum { get; }
+    public double Maximum { get; }
 
-
-	/// <exception cref="CommandSyntaxException" />
-	public double Parse(IStringReader reader) 
-	{
+    /// <exception cref="CommandSyntaxException" />
+    public double Parse(IStringReader reader)
+    {
         int start = reader.Cursor;
         double result = reader.ReadDouble();
-		if (result < Minimum)
-		{
-			reader.Cursor = start;
-			throw CommandSyntaxException.BuiltInExceptions.DoubleTooLow().CreateWithContext(reader, result, Minimum);
-		}
-		if (result > Maximum) {
-			reader.Cursor = start;
-			throw CommandSyntaxException.BuiltInExceptions.DoubleTooHigh().CreateWithContext(reader, result, Maximum);
-		}
-		return result;
-	}
+        if (result < Minimum)
+        {
+            reader.Cursor = start;
+            throw CommandSyntaxException
+                .BuiltInExceptions.DoubleTooLow()
+                .CreateWithContext(reader, result, Minimum);
+        }
+        if (result > Maximum)
+        {
+            reader.Cursor = start;
+            throw CommandSyntaxException
+                .BuiltInExceptions.DoubleTooHigh()
+                .CreateWithContext(reader, result, Maximum);
+        }
+        return result;
+    }
 
-	public IEnumerable<string> Examples => DoubleExamples;
+    public IEnumerable<string> Examples => DoubleExamples;
 
-
-	[SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
-	public override bool Equals(object? obj)
-	{
-		if (this == obj)
+    [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
+    public override bool Equals(object? obj)
+    {
+        if (this == obj)
         {
             return true;
         }
@@ -52,28 +63,28 @@ public class DoubleArgumentType : IArgumentType<double>
         }
 
         var that = (DoubleArgumentType)obj;
-		return Maximum == that.Maximum && Minimum == that.Minimum;
-	}
+        return Maximum == that.Maximum && Minimum == that.Minimum;
+    }
 
-	public override int GetHashCode()
-	{
-		return (int)(31 * Minimum + Maximum);
-	}
+    public override int GetHashCode()
+    {
+        return (int)(31 * Minimum + Maximum);
+    }
 
-	[SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
-	public override string ToString()
-	{
-		if (Minimum == -double.MaxValue && Maximum == double.MaxValue)
-		{
-			return "double()";
-		}
-		else if (Maximum == double.MaxValue)
-		{
-			return $"double({Minimum:#.0})";
-		}
-		else
-		{
-			return $"double({Minimum:#.0}, {Maximum:#.0})";
-		}
-	}
+    [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
+    public override string ToString()
+    {
+        if (Minimum == -double.MaxValue && Maximum == double.MaxValue)
+        {
+            return "double()";
+        }
+        else if (Maximum == double.MaxValue)
+        {
+            return $"double({Minimum:#.0})";
+        }
+        else
+        {
+            return $"double({Minimum:#.0}, {Maximum:#.0})";
+        }
+    }
 }

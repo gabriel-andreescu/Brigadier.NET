@@ -3,69 +3,76 @@
 namespace Brigadier.NET.ArgumentTypes;
 
 [PublicAPI]
-public class StringArgumentType : IArgumentType<string> {
-	internal StringArgumentType(StringArgType type)
-	{
-		Type = type;
-	}
+public class StringArgumentType : IArgumentType<string>
+{
+    internal StringArgumentType(StringArgType type)
+    {
+        Type = type;
+    }
 
-	public StringArgType Type { get; }
+    public StringArgType Type { get; }
 
-	/// <exception cref="CommandSyntaxException" />
-	public string Parse(IStringReader reader)
-	{
-		if (Type == StringArgType.GreedyPhrase) {
+    /// <exception cref="CommandSyntaxException" />
+    public string Parse(IStringReader reader)
+    {
+        if (Type == StringArgType.GreedyPhrase)
+        {
             string text = reader.Remaining;
-			reader.Cursor = reader.TotalLength;
-			return text;
-		} else if (Type == StringArgType.SingleWord) {
-			return reader.ReadUnquotedString();
-		} else {
-			return reader.ReadString();
-		}
-	}
+            reader.Cursor = reader.TotalLength;
+            return text;
+        }
+        else if (Type == StringArgType.SingleWord)
+        {
+            return reader.ReadUnquotedString();
+        }
+        else
+        {
+            return reader.ReadString();
+        }
+    }
 
-	public IEnumerable<string> Examples => StringExamples[Type];
-		
-	public override string ToString()
-	{
-		return "string()";
-	}
+    public IEnumerable<string> Examples => StringExamples[Type];
 
-	public static string EscapeIfRequired(string input)
-	{
-		foreach (char c in input)
-		{
-			if (!StringReader.IsAllowedInUnquotedString(c))
-			{
-				return Escape(input);
-			}
-		}
-		return input;
-	}
+    public override string ToString()
+    {
+        return "string()";
+    }
 
-	private static string Escape(string input)
-	{
-		var result = new StringBuilder("\"");
+    public static string EscapeIfRequired(string input)
+    {
+        foreach (char c in input)
+        {
+            if (!StringReader.IsAllowedInUnquotedString(c))
+            {
+                return Escape(input);
+            }
+        }
+        return input;
+    }
 
-		for (int i = 0; i < input.Length; i++)
-		{
+    private static string Escape(string input)
+    {
+        var result = new StringBuilder("\"");
+
+        for (int i = 0; i < input.Length; i++)
+        {
             char c = input[i];
-			if (c == '\\' || c == '"')
-			{
-				result.Append('\\');
-			}
-			result.Append(c);
-		}
+            if (c == '\\' || c == '"')
+            {
+                result.Append('\\');
+            }
+            result.Append(c);
+        }
 
-		result.Append('"');
-		return result.ToString();
-	}
+        result.Append('"');
+        return result.ToString();
+    }
 
-	private static readonly Dictionary<StringArgType, IEnumerable<string>> StringExamples = new Dictionary<StringArgType, IEnumerable<string>>
-	{
-		{ StringArgType.SingleWord, ["word", "words_with_underscores"] },
-		{ StringArgType.QuotablePhrase, ["\"quoted phrase\"", "word", "\"\""] },
-		{ StringArgType.GreedyPhrase, ["word", "words with spaces", "\"and symbols\""] }
-	};
+    private static readonly Dictionary<StringArgType, IEnumerable<string>> StringExamples =
+        new Dictionary<StringArgType, IEnumerable<string>>
+        {
+            { StringArgType.SingleWord, ["word", "words_with_underscores"] },
+            { StringArgType.QuotablePhrase, ["\"quoted phrase\"", "word", "\"\""] },
+            { StringArgType.GreedyPhrase, ["word", "words with spaces", "\"and symbols\""] },
+        };
 }

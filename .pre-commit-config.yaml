@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: csharpier
+        name: CSharpier
+        language: system
+        entry: dotnet csharpier format
+        types: [text]
+        files: \.(cs|csx|csproj|props|targets|slnx|xml|config)$

@@ -8,20 +8,22 @@ using Xunit;
 
 namespace Brigadier.NET.Tests.arguments;
 
-public class BoolArgumentTypeTest {
-	private readonly BoolArgumentType _type;
+public class BoolArgumentTypeTest
+{
+    private readonly BoolArgumentType _type;
 
-	public BoolArgumentTypeTest()
-	{
-		_type = Arguments.Bool();
-	}
+    public BoolArgumentTypeTest()
+    {
+        _type = Arguments.Bool();
+    }
 
-	[Fact]
-	public void Parse(){
+    [Fact]
+    public void Parse()
+    {
         IStringReader reader = Substitute.For<IStringReader>();
-		reader.ReadBoolean().Returns(true);
-		_type.Parse(reader).Should().Be(true);
+        reader.ReadBoolean().Returns(true);
+        _type.Parse(reader).Should().Be(true);
 
-		reader.Received().ReadBoolean();
-	}
+        reader.Received().ReadBoolean();
+    }
 }

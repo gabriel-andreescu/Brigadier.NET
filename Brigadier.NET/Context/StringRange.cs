@@ -3,71 +3,71 @@
 [PublicAPI]
 public readonly struct StringRange : IEquatable<StringRange>
 {
-	public StringRange(int start, int end)
-	{
-		Start = start;
-		End = end;
-	}
+    public StringRange(int start, int end)
+    {
+        Start = start;
+        End = end;
+    }
 
-	public static StringRange At(int pos)
-	{
-		return new StringRange(pos, pos);
-	}
+    public static StringRange At(int pos)
+    {
+        return new StringRange(pos, pos);
+    }
 
-	public static StringRange Between(int start, int end)
-	{
-		return new StringRange(start, end);
-	}
+    public static StringRange Between(int start, int end)
+    {
+        return new StringRange(start, end);
+    }
 
-	public static StringRange Encompassing(StringRange a, StringRange b)
-	{
-		return new StringRange(Math.Min(a.Start, b.Start), Math.Max(a.End, b.End));
-	}
+    public static StringRange Encompassing(StringRange a, StringRange b)
+    {
+        return new StringRange(Math.Min(a.Start, b.Start), Math.Max(a.End, b.End));
+    }
 
-	public int Start { get; }
+    public int Start { get; }
 
-	public int End { get; }
+    public int End { get; }
 
-	public string Get(IImmutableStringReader reader)
-	{
-		return reader.String.Substring(Start, End - Start);
-	}
+    public string Get(IImmutableStringReader reader)
+    {
+        return reader.String.Substring(Start, End - Start);
+    }
 
-	public string Get(string source)
-	{
-		return source.Substring(Start, End - Start);
-	}
+    public string Get(string source)
+    {
+        return source.Substring(Start, End - Start);
+    }
 
+    public bool IsEmpty => Start == End;
 
-	public bool IsEmpty => Start == End;
+    public int Length => End - Start;
 
-	public int Length => End - Start;
+    public override bool Equals(object? obj)
+    {
+        if (obj is not StringRange that)
+        {
+            return false;
+        }
 
-	public override bool Equals(object? obj)
-	{
-		if (obj is not StringRange that) {
-			return false;
-		}
+        return Start == that.Start && End == that.End;
+    }
 
-		return Start == that.Start && End == that.End;
-	}
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Start, End);
+    }
 
-	public override int GetHashCode()
-	{
-		return HashCode.Combine(Start, End);
-	}
+    public static bool operator ==(StringRange left, StringRange right) => left.Equals(right);
 
-	public static bool operator ==(StringRange left, StringRange right) => left.Equals(right);
+    public static bool operator !=(StringRange left, StringRange right) => !left.Equals(right);
 
-	public static bool operator !=(StringRange left, StringRange right) => !left.Equals(right);
+    public override string ToString()
+    {
+        return $"StringRange{{start={Start}, end={End}}}";
+    }
 
-	public override string ToString()
-	{
-		return $"StringRange{{start={Start}, end={End}}}";
-	}
-
-	public bool Equals(StringRange other)
-	{
-		return Start == other.Start && End == other.End;
-	}
+    public bool Equals(StringRange other)
+    {
+        return Start == other.Start && End == other.End;
+    }
 }

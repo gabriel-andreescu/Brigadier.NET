@@ -3,15 +3,19 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Brigadier.NET;
+using Brigadier.NET.ArgumentTypes;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Exceptions;
-using Brigadier.NET.ArgumentTypes;
-using static Brigadier.NET.Arguments;
 using Brigadier.NET.VerifyNativeAOT;
 using Spectre.Console;
+using static Brigadier.NET.Arguments;
 
-AnsiConsole.MarkupLine("[green]Brigadier.NET VerifyNativeAOT - Filesystem Browser (Brigadier commands)[/]");
-AnsiConsole.MarkupLine("Type commands like: [yellow]ls All .[/], [yellow]cd ..[/], [yellow]readfile file.txt[/]. Type [yellow]help[/] or [yellow]exit[/].");
+AnsiConsole.MarkupLine(
+    "[green]Brigadier.NET VerifyNativeAOT - Filesystem Browser (Brigadier commands)[/]"
+);
+AnsiConsole.MarkupLine(
+    "Type commands like: [yellow]ls All .[/], [yellow]cd ..[/], [yellow]readfile file.txt[/]. Type [yellow]help[/] or [yellow]exit[/]."
+);
 
 var source = new ConsoleSource();
 CommandDispatcher<ConsoleSource> dispatcher = BuildDispatcher();
@@ -59,82 +63,97 @@ CommandDispatcher<ConsoleSource> BuildDispatcher()
     var d = new CommandDispatcher<ConsoleSource>();
 
     // ls <type> [path]
-    d.Register(ctx => ctx
-        .Literal("ls")
-        .Then(ctx.Argument("type", new EnumArgumentType<EntryType>())
-            .Then(ctx.Argument("path", String())
-                .Executes(c =>
-                {
-                    EntryType type = c.GetArgument<EntryType>("type");
-                    string path = GetString(c, "path");
-                    string resolved = ResolvePath(path, c.Source.CurrentDirectory);
-                    ListDirectory(resolved, type);
-                    return 1;
-                }))
-            .Executes(c =>
-            {
-                EntryType type = c.GetArgument<EntryType>("type");
-                ListDirectory(c.Source.CurrentDirectory, type);
-                return 1;
-            })));
+    d.Register(ctx =>
+        ctx.Literal("ls")
+            .Then(
+                ctx.Argument("type", new EnumArgumentType<EntryType>())
+                    .Then(
+                        ctx.Argument("path", String())
+                            .Executes(c =>
+                            {
+                                EntryType type = c.GetArgument<EntryType>("type");
+                                string path = GetString(c, "path");
+                                string resolved = ResolvePath(path, c.Source.CurrentDirectory);
+                                ListDirectory(resolved, type);
+                                return 1;
+                            })
+                    )
+                    .Executes(c =>
+                    {
+                        EntryType type = c.GetArgument<EntryType>("type");
+                        ListDirectory(c.Source.CurrentDirectory, type);
+                        return 1;
+                    })
+            )
+    );
 
     // cd <path>
-    d.Register(ctx => ctx
-        .Literal("cd")
-        .Then(ctx.Argument("path", GreedyString())
-            .Executes(c =>
-            {
-                string path = GetString(c, "path");
-                string resolved = ResolvePath(path, c.Source.CurrentDirectory);
-                if (!Directory.Exists(resolved))
-                {
-                    AnsiConsole.MarkupLine("[yellow]Directory not found.[/]");
-                    return 0;
-                }
-                c.Source.CurrentDirectory = resolved;
-                // Show cwd with escaped content to avoid markup errors
-                AnsiConsole.MarkupLine($"[green]cwd[/]: [grey]{MarkupEscaped(c.Source.CurrentDirectory)}[/]");
-                return 1;
-            })));
+    d.Register(ctx =>
+        ctx.Literal("cd")
+            .Then(
+                ctx.Argument("path", GreedyString())
+                    .Executes(c =>
+                    {
+                        string path = GetString(c, "path");
+                        string resolved = ResolvePath(path, c.Source.CurrentDirectory);
+                        if (!Directory.Exists(resolved))
+                        {
+                            AnsiConsole.MarkupLine("[yellow]Directory not found.[/]");
+                            return 0;
+                        }
+                        c.Source.CurrentDirectory = resolved;
+                        // Show cwd with escaped content to avoid markup errors
+                        AnsiConsole.MarkupLine(
+                            $"[green]cwd[/]: [grey]{MarkupEscaped(c.Source.CurrentDirectory)}[/]"
+                        );
+                        return 1;
+                    })
+            )
+    );
     // readfile <path>
-    d.Register(ctx => ctx
-        .Literal("readfile")
-        .Then(ctx.Argument("path", GreedyString())
+    d.Register(ctx =>
+        ctx.Literal("readfile")
+            .Then(
+                ctx.Argument("path", GreedyString())
+                    .Executes(c =>
+                    {
+                        string path = GetString(c, "path");
+                        string resolved = ResolvePath(path, c.Source.CurrentDirectory);
+                        if (!File.Exists(resolved))
+                        {
+                            AnsiConsole.MarkupLine("[yellow]File not found.[/]");
+                            return 0;
+                        }
+                        ShowFilePreview(resolved);
+                        return 1;
+                    })
+            )
+    );
+    // help
+    d.Register(ctx =>
+        ctx.Literal("help")
             .Executes(c =>
             {
-                string path = GetString(c, "path");
-                string resolved = ResolvePath(path, c.Source.CurrentDirectory);
-                if (!File.Exists(resolved))
+                string[] usages = d.GetAllUsage(d.Root, c.Source, true);
+                AnsiConsole.MarkupLine("[green]Available commands:[/]");
+                foreach (string? u in usages.Distinct().OrderBy(s => s))
                 {
-                    AnsiConsole.MarkupLine("[yellow]File not found.[/]");
-                    return 0;
+                    AnsiConsole.MarkupLine("  " + u);
                 }
-                ShowFilePreview(resolved);
-                return 1;
-            })));
-    // help
-    d.Register(ctx => ctx
-        .Literal("help")
-        .Executes(c =>
-        {
-            string[] usages = d.GetAllUsage(d.Root, c.Source, true);
-            AnsiConsole.MarkupLine("[green]Available commands:[/]");
-            foreach (string? u in usages.Distinct().OrderBy(s => s))
-            {
-                AnsiConsole.MarkupLine("  " + u);
-            }
 
-            AnsiConsole.MarkupLine("Special: exit");
-            return usages.Length;
-        }));
+                AnsiConsole.MarkupLine("Special: exit");
+                return usages.Length;
+            })
+    );
     // default: allow plain 'ls' to list current dir (no type) -> show All
-    d.Register(ctx => ctx
-        .Literal("ls")
-        .Executes(c =>
-        {
-            ListDirectory(c.Source.CurrentDirectory, EntryType.All);
-            return 1;
-        }));
+    d.Register(ctx =>
+        ctx.Literal("ls")
+            .Executes(c =>
+            {
+                ListDirectory(c.Source.CurrentDirectory, EntryType.All);
+                return 1;
+            })
+    );
 
     return d;
 }
@@ -162,14 +181,18 @@ static void ListDirectory(string path, EntryType type)
 {
     try
     {
-        IEnumerable<FileSystemEntry> dirs = Directory.EnumerateDirectories(path).Select(x => new FileSystemEntry(x, true));
-        IEnumerable<FileSystemEntry> files = Directory.EnumerateFiles(path).Select(x => new FileSystemEntry(x, false));
+        IEnumerable<FileSystemEntry> dirs = Directory
+            .EnumerateDirectories(path)
+            .Select(x => new FileSystemEntry(x, true));
+        IEnumerable<FileSystemEntry> files = Directory
+            .EnumerateFiles(path)
+            .Select(x => new FileSystemEntry(x, false));
 
         IEnumerable<FileSystemEntry> entries = type switch
         {
             EntryType.Directory => dirs,
             EntryType.File => files,
-            _ => dirs.Concat(files)
+            _ => dirs.Concat(files),
         };
 
         var table = new Table();
@@ -178,7 +201,11 @@ static void ListDirectory(string path, EntryType type)
         table.AddColumn("Size");
         table.AddColumn("Modified");
 
-        foreach (FileSystemEntry? e in entries.OrderByDescending(e => e.IsDirectory).ThenBy(e => e.Name, StringComparer.OrdinalIgnoreCase))
+        foreach (
+            FileSystemEntry? e in entries
+                .OrderByDescending(e => e.IsDirectory)
+                .ThenBy(e => e.Name, StringComparer.OrdinalIgnoreCase)
+        )
         {
             table.AddRow(
                 MarkupEscaped(e.Name),
@@ -205,7 +232,9 @@ static void ShowFilePreview(string file)
     try
     {
         var lines = File.ReadLines(file).Take(200).ToList();
-        AnsiConsole.MarkupLine($"[green]Preview of[/] [grey]{MarkupEscaped(file)}[/] ([yellow]{lines.Count} lines[/]):");
+        AnsiConsole.MarkupLine(
+            $"[green]Preview of[/] [grey]{MarkupEscaped(file)}[/] ([yellow]{lines.Count} lines[/]):"
+        );
         var panel = new Panel(string.Join('\n', lines)) { Border = BoxBorder.Rounded };
         AnsiConsole.Write(panel);
     }
@@ -222,7 +251,7 @@ static string MarkupEscaped(string text)
         return string.Empty;
     }
 
-    return text.Replace("[", "[[").Replace("]", "]]" );
+    return text.Replace("[", "[[").Replace("]", "]]");
 }
 
 namespace Brigadier.NET.VerifyNativeAOT
@@ -231,7 +260,8 @@ namespace Brigadier.NET.VerifyNativeAOT
     {
         public string Name => System.IO.Path.GetFileName(Path) ?? Path;
         public long Size => IsDirectory ? 0 : new FileInfo(Path).Length;
-        public DateTime Modified => IsDirectory ? Directory.GetLastWriteTimeUtc(Path) : File.GetLastWriteTimeUtc(Path);
+        public DateTime Modified =>
+            IsDirectory ? Directory.GetLastWriteTimeUtc(Path) : File.GetLastWriteTimeUtc(Path);
     }
 
     public class ConsoleSource
@@ -243,6 +273,6 @@ namespace Brigadier.NET.VerifyNativeAOT
     {
         All,
         Directory,
-        File
+        File,
     }
 }

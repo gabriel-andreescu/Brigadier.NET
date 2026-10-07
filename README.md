@@ -40,6 +40,19 @@ dotnet add package Brigadier.NET
 # Contributing
 Contributions are welcome ! :D
 
+Every project builds with the SDK's recommended analyzers and the `.editorconfig` code style,
+and a warning fails the build. CSharpier formats C#, MSBuild and XML files when they are
+committed. Set it up once per clone:
+
+```powershell
+dotnet tool restore
+uv tool install pre-commit
+pre-commit install
+```
+
+`pre-commit run --all-files` formats every tracked file, and `dotnet csharpier check .` checks
+formatting without changing anything.
+
 # Usage
 At the heart of Brigadier, you need a `CommandDispatcher<TSource>`, where `<TSource>` is any custom object you choose to identify a "command source".
 

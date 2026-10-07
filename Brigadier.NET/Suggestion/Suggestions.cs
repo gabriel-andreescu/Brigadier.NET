@@ -5,26 +5,26 @@ namespace Brigadier.NET.Suggestion;
 [PublicAPI]
 public class Suggestions : IEquatable<Suggestions>
 {
-	private static readonly Suggestions NoSuggestions = new Suggestions(StringRange.At(0), []);
+    private static readonly Suggestions NoSuggestions = new Suggestions(StringRange.At(0), []);
 
-	public Suggestions(StringRange range, List<Suggestion> suggestions)
-	{
-		Range = range;
-		List = suggestions;
-	}
+    public Suggestions(StringRange range, List<Suggestion> suggestions)
+    {
+        Range = range;
+        List = suggestions;
+    }
 
-	public StringRange Range { get; }
+    public StringRange Range { get; }
 
-	public List<Suggestion> List { get; }
+    public List<Suggestion> List { get; }
 
-	public bool IsEmpty()
-	{
-		return List.Count == 0;
-	}
+    public bool IsEmpty()
+    {
+        return List.Count == 0;
+    }
 
-	public override bool Equals(object? obj)
-	{
-		if (ReferenceEquals(null, obj))
+    public override bool Equals(object? obj)
+    {
+        if (ReferenceEquals(null, obj))
         {
             return false;
         }
@@ -34,13 +34,12 @@ public class Suggestions : IEquatable<Suggestions>
             return true;
         }
 
-        return obj is Suggestions other 
-		       && Equals(other);
-	}
+        return obj is Suggestions other && Equals(other);
+    }
 
-	public bool Equals(Suggestions? other)
-	{
-		if (ReferenceEquals(null, other))
+    public bool Equals(Suggestions? other)
+    {
+        if (ReferenceEquals(null, other))
         {
             return false;
         }
@@ -50,68 +49,67 @@ public class Suggestions : IEquatable<Suggestions>
             return true;
         }
 
-        return Equals(Range, other.Range) 
-		       && Equals(List, other.List);
-	}
+        return Equals(Range, other.Range) && Equals(List, other.List);
+    }
 
-	public override int GetHashCode()
-	{
-		return HashCode.Combine(Range, List);
-	}
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Range, List);
+    }
 
-	public override string ToString()
-	{
-		return $"Suggestions{{range={Range}, suggestions={List}}}";
-	}
+    public override string ToString()
+    {
+        return $"Suggestions{{range={Range}, suggestions={List}}}";
+    }
 
-	public static Task<Suggestions> Empty()
-	{
-		return Task.FromResult(NoSuggestions);
-	}
+    public static Task<Suggestions> Empty()
+    {
+        return Task.FromResult(NoSuggestions);
+    }
 
-	public static Suggestions Merge(string command, ICollection<Suggestions> input)
-	{
-		if (input.Count == 0)
-		{
-			return NoSuggestions;
-		}
-		else if (input.Count == 1)
-		{
-			return input.Single();
-		}
+    public static Suggestions Merge(string command, ICollection<Suggestions> input)
+    {
+        if (input.Count == 0)
+        {
+            return NoSuggestions;
+        }
+        else if (input.Count == 1)
+        {
+            return input.Single();
+        }
 
-		var texts = new HashSet<Suggestion>();
-		foreach (Suggestions suggestions in input)
-		{
-			foreach (Suggestion suggestion in suggestions.List)
-			{
-				texts.Add(suggestion);
-			}
-		}
-		return Create(command, texts.ToArray());
-	}
+        var texts = new HashSet<Suggestion>();
+        foreach (Suggestions suggestions in input)
+        {
+            foreach (Suggestion suggestion in suggestions.List)
+            {
+                texts.Add(suggestion);
+            }
+        }
+        return Create(command, texts.ToArray());
+    }
 
-	public static Suggestions Create(string command, Suggestion[] suggestions)
-	{
-		if (suggestions.Length == 0)
-		{
-			return NoSuggestions;
-		}
+    public static Suggestions Create(string command, Suggestion[] suggestions)
+    {
+        if (suggestions.Length == 0)
+        {
+            return NoSuggestions;
+        }
         int start = int.MaxValue;
         int end = int.MinValue;
-		foreach (Suggestion suggestion in suggestions)
-		{
-			start = Math.Min(suggestion.Range.Start, start);
-			end = Math.Max(suggestion.Range.End, end);
-		}
-		var range = new StringRange(start, end);
-		var texts = new HashSet<Suggestion>();
-		foreach (Suggestion suggestion in suggestions)
-		{
-			texts.Add(suggestion.Expand(command, range));
-		}
-		var sorted = new List<Suggestion>(texts);
-		sorted.Sort((a, b) => a.CompareToIgnoreCase(b));
-		return new Suggestions(range, sorted);
-	}
+        foreach (Suggestion suggestion in suggestions)
+        {
+            start = Math.Min(suggestion.Range.Start, start);
+            end = Math.Max(suggestion.Range.End, end);
+        }
+        var range = new StringRange(start, end);
+        var texts = new HashSet<Suggestion>();
+        foreach (Suggestion suggestion in suggestions)
+        {
+            texts.Add(suggestion.Expand(command, range));
+        }
+        var sorted = new List<Suggestion>(texts);
+        sorted.Sort((a, b) => a.CompareToIgnoreCase(b));
+        return new Suggestions(range, sorted);
+    }
 }

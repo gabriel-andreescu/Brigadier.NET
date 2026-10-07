@@ -10,77 +10,82 @@ using Xunit;
 
 namespace Brigadier.NET.Tests.tree;
 
-public abstract class AbstractCommandNodeTest {
-	private readonly Command<object> _command = Substitute.For<Command<object>>();
+public abstract class AbstractCommandNodeTest
+{
+    private readonly Command<object> _command = Substitute.For<Command<object>>();
 
-	protected abstract CommandNode<object> GetCommandNode();
+    protected abstract CommandNode<object> GetCommandNode();
 
-	[Fact]
-	public void TestAddChild(){
+    [Fact]
+    public void TestAddChild()
+    {
         CommandNode<object> node = GetCommandNode();
 
-		
+        node.AddChild(new LiteralArgumentBuilder<object>("child1").Build());
+        node.AddChild(new LiteralArgumentBuilder<object>("child2").Build());
+        node.AddChild(new LiteralArgumentBuilder<object>("child1").Build());
 
-		node.AddChild(new LiteralArgumentBuilder<object>("child1").Build());
-		node.AddChild(new LiteralArgumentBuilder<object>("child2").Build());
-		node.AddChild(new LiteralArgumentBuilder<object>("child1").Build());
+        node.Children.Should().HaveCount(2);
+    }
 
-		node.Children.Should().HaveCount(2);
-	}
-
-	[Fact]
-	public void TestAddChildMergesGrandchildren(){
+    [Fact]
+    public void TestAddChildMergesGrandchildren()
+    {
         CommandNode<object> node = GetCommandNode();
 
-		node.AddChild(new LiteralArgumentBuilder<object>("child")
-			.Then(r => r.Literal("grandchild1"))
-			.Build());
+        node.AddChild(
+            new LiteralArgumentBuilder<object>("child").Then(r => r.Literal("grandchild1")).Build()
+        );
 
-		node.AddChild(new LiteralArgumentBuilder<object>("child")
-			.Then(r => r.Literal("grandchild2"))
-			.Build());
+        node.AddChild(
+            new LiteralArgumentBuilder<object>("child").Then(r => r.Literal("grandchild2")).Build()
+        );
 
-		node.Children.Should().HaveCount(1);
-		node.Children.First().Children.Should().HaveCount(2);
-	}
+        node.Children.Should().HaveCount(1);
+        node.Children.First().Children.Should().HaveCount(2);
+    }
 
-	[Fact]
-	public void TestAddChildPreservesCommand(){
+    [Fact]
+    public void TestAddChildPreservesCommand()
+    {
         CommandNode<object> node = GetCommandNode();
 
-		node.AddChild(new LiteralArgumentBuilder<object>("child").Executes(_command).Build());
-		node.AddChild(new LiteralArgumentBuilder<object>("child").Build());
+        node.AddChild(new LiteralArgumentBuilder<object>("child").Executes(_command).Build());
+        node.AddChild(new LiteralArgumentBuilder<object>("child").Build());
 
-		node.Children.First().Command.Should().Be(_command);
-	}
+        node.Children.First().Command.Should().Be(_command);
+    }
 
-	[Fact]
-	public void TestAddChildPreservesDescription(){
+    [Fact]
+    public void TestAddChildPreservesDescription()
+    {
         CommandNode<object> node = GetCommandNode();
 
-		node.AddChild(new LiteralArgumentBuilder<object>("child").Describes("A child.").Build());
-		node.AddChild(new LiteralArgumentBuilder<object>("child").Build());
+        node.AddChild(new LiteralArgumentBuilder<object>("child").Describes("A child.").Build());
+        node.AddChild(new LiteralArgumentBuilder<object>("child").Build());
 
-		node.Children.First().Description!.String.Should().Be("A child.");
-	}
+        node.Children.First().Description!.String.Should().Be("A child.");
+    }
 
-	[Fact]
-	public void TestAddChildOverwritesDescription(){
+    [Fact]
+    public void TestAddChildOverwritesDescription()
+    {
         CommandNode<object> node = GetCommandNode();
 
-		node.AddChild(new LiteralArgumentBuilder<object>("child").Build());
-		node.AddChild(new LiteralArgumentBuilder<object>("child").Describes("A child.").Build());
+        node.AddChild(new LiteralArgumentBuilder<object>("child").Build());
+        node.AddChild(new LiteralArgumentBuilder<object>("child").Describes("A child.").Build());
 
-		node.Children.First().Description!.String.Should().Be("A child.");
-	}
+        node.Children.First().Description!.String.Should().Be("A child.");
+    }
 
-	[Fact]
-	public void TestAddChildOverwritesCommand(){
+    [Fact]
+    public void TestAddChildOverwritesCommand()
+    {
         CommandNode<object> node = GetCommandNode();
 
-		node.AddChild(new LiteralArgumentBuilder<object>("child").Build());
-		node.AddChild(new LiteralArgumentBuilder<object>("child").Executes(_command).Build());
+        node.AddChild(new LiteralArgumentBuilder<object>("child").Build());
+        node.AddChild(new LiteralArgumentBuilder<object>("child").Executes(_command).Build());
 
-		node.Children.First().Command.Should().Be(_command);
-	}
+        node.Children.First().Command.Should().Be(_command);
+    }
 }

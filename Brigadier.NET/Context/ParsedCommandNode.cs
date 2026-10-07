@@ -5,24 +5,24 @@ namespace Brigadier.NET.Context;
 [PublicAPI]
 public class ParsedCommandNode<TSource> : IEquatable<ParsedCommandNode<TSource>>
 {
-	public ParsedCommandNode(CommandNode<TSource> node, StringRange range)
-	{
-		Node = node;
-		Range = range;
-	}
+    public ParsedCommandNode(CommandNode<TSource> node, StringRange range)
+    {
+        Node = node;
+        Range = range;
+    }
 
-	public CommandNode<TSource> Node { get; }
+    public CommandNode<TSource> Node { get; }
 
-	public StringRange Range { get; }
+    public StringRange Range { get; }
 
-	public override string ToString()
-	{
-		return $"{Node}@{Range}";
-	}
+    public override string ToString()
+    {
+        return $"{Node}@{Range}";
+    }
 
-	public override bool Equals(object? obj)
-	{
-		if (ReferenceEquals(null, obj))
+    public override bool Equals(object? obj)
+    {
+        if (ReferenceEquals(null, obj))
         {
             return false;
         }
@@ -33,11 +33,11 @@ public class ParsedCommandNode<TSource> : IEquatable<ParsedCommandNode<TSource>>
         }
 
         return obj is ParsedCommandNode<TSource> other && Equals(other);
-	}
+    }
 
-	public bool Equals(ParsedCommandNode<TSource>? other)
-	{
-		if (ReferenceEquals(null, other))
+    public bool Equals(ParsedCommandNode<TSource>? other)
+    {
+        if (ReferenceEquals(null, other))
         {
             return false;
         }
@@ -48,10 +48,10 @@ public class ParsedCommandNode<TSource> : IEquatable<ParsedCommandNode<TSource>>
         }
 
         return Equals(Node, other.Node) && Equals(Range, other.Range);
-	}
+    }
 
-	public override int GetHashCode()
-	{
-		return HashCode.Combine(Node, Range);
-	}
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Node, Range);
+    }
 }

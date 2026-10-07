@@ -7,32 +7,34 @@ namespace Brigadier.NET.Tree;
 [PublicAPI]
 public class RootCommandNode<TSource> : CommandNode<TSource>, IEquatable<RootCommandNode<TSource>>
 {
-	public RootCommandNode() : base(null, (c) => true, null, s => [s.Source], false)
-	{
-			
-	}
+    public RootCommandNode()
+        : base(null, (c) => true, null, s => [s.Source], false) { }
 
-	public override string Name => string.Empty;
+    public override string Name => string.Empty;
 
-	public override string UsageText => string.Empty;
+    public override string UsageText => string.Empty;
 
-	public override void Parse(StringReader reader, CommandContextBuilder<TSource> contextBuilder)
-	{
-	}
+    public override void Parse(
+        StringReader reader,
+        CommandContextBuilder<TSource> contextBuilder
+    ) { }
 
-	public override Task<Suggestions> ListSuggestions(CommandContext<TSource> context, SuggestionsBuilder builder)
-	{
-		return Suggestions.Empty();
-	}
+    public override Task<Suggestions> ListSuggestions(
+        CommandContext<TSource> context,
+        SuggestionsBuilder builder
+    )
+    {
+        return Suggestions.Empty();
+    }
 
-	protected override bool IsValidInput(string input)
-	{
-		return false;
-	}
+    protected override bool IsValidInput(string input)
+    {
+        return false;
+    }
 
-	public override bool Equals(object? obj)
-	{
-		if (ReferenceEquals(null, obj))
+    public override bool Equals(object? obj)
+    {
+        if (ReferenceEquals(null, obj))
         {
             return false;
         }
@@ -43,25 +45,24 @@ public class RootCommandNode<TSource> : CommandNode<TSource>, IEquatable<RootCom
         }
 
         return obj is RootCommandNode<TSource> other && Equals(other);
-	}
+    }
 
-	public bool Equals(RootCommandNode<TSource>? other)
-	{
-		return true;
-	}
+    public bool Equals(RootCommandNode<TSource>? other)
+    {
+        return true;
+    }
 
-	public override int GetHashCode()
-	{
-		return HashCode.Combine(GetType());
-	}
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(GetType());
+    }
 
-	public override IArgumentBuilder<TSource, CommandNode<TSource>> CreateBuilder()
-	{
-		throw new InvalidOperationException("Cannot convert root into a builder");
-	}
+    public override IArgumentBuilder<TSource, CommandNode<TSource>> CreateBuilder()
+    {
+        throw new InvalidOperationException("Cannot convert root into a builder");
+    }
 
+    public override IEnumerable<string> Examples => Array.Empty<string>();
 
-	public override IEnumerable<string> Examples => Array.Empty<string>();
-
-	public override string ToString() => "<root>";
+    public override string ToString() => "<root>";
 }

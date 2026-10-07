@@ -4,114 +4,122 @@ namespace Brigadier.NET.Builder;
 
 [PublicAPI]
 public interface IArgumentBuilder<TSource, out TNode>
-	where TNode : CommandNode<TSource>
+    where TNode : CommandNode<TSource>
 {
-	TNode Build();
+    TNode Build();
 }
 
 [PublicAPI]
-public abstract class ArgumentBuilder<TSource, TThis, TNode> : IArgumentBuilder<TSource, TNode> 
-	where TThis : ArgumentBuilder<TSource, TThis, TNode> 
-	where TNode : CommandNode<TSource>
+public abstract class ArgumentBuilder<TSource, TThis, TNode> : IArgumentBuilder<TSource, TNode>
+    where TThis : ArgumentBuilder<TSource, TThis, TNode>
+    where TNode : CommandNode<TSource>
 {
-	private readonly RootCommandNode<TSource> _arguments = new RootCommandNode<TSource>();
+    private readonly RootCommandNode<TSource> _arguments = new RootCommandNode<TSource>();
 
-	protected TThis This => (TThis)this;
+    protected TThis This => (TThis)this;
 
-	public TThis Then<TChildNode>(IArgumentBuilder<TSource, TChildNode> argument) where TChildNode : CommandNode<TSource>
-	{
-		if (RedirectTarget != null)
-		{
-			throw new InvalidOperationException("Cannot add children to a redirected node");
-		}
-		_arguments.AddChild(argument.Build());
-		return This;
-	}
+    public TThis Then<TChildNode>(IArgumentBuilder<TSource, TChildNode> argument)
+        where TChildNode : CommandNode<TSource>
+    {
+        if (RedirectTarget != null)
+        {
+            throw new InvalidOperationException("Cannot add children to a redirected node");
+        }
+        _arguments.AddChild(argument.Build());
+        return This;
+    }
 
-	public TThis Then<TChildNode>(Func<IArgumentContext<TSource>, IArgumentBuilder<TSource, TChildNode>> argument) where TChildNode : CommandNode<TSource>
-	{
-		if (RedirectTarget != null)
-		{
-			throw new InvalidOperationException("Cannot add children to a redirected node");
-		}
-		_arguments.AddChild(argument(default(ArgumentContext<TSource>)).Build());
-		return This;
-	}
+    public TThis Then<TChildNode>(
+        Func<IArgumentContext<TSource>, IArgumentBuilder<TSource, TChildNode>> argument
+    )
+        where TChildNode : CommandNode<TSource>
+    {
+        if (RedirectTarget != null)
+        {
+            throw new InvalidOperationException("Cannot add children to a redirected node");
+        }
+        _arguments.AddChild(argument(default(ArgumentContext<TSource>)).Build());
+        return This;
+    }
 
-	public TThis Then(CommandNode<TSource> argument)
-	{
-		if (RedirectTarget != null)
-		{
-			throw new InvalidOperationException("Cannot add children to a redirected node");
-		}
-		_arguments.AddChild(argument);
-		return This;
-	}
+    public TThis Then(CommandNode<TSource> argument)
+    {
+        if (RedirectTarget != null)
+        {
+            throw new InvalidOperationException("Cannot add children to a redirected node");
+        }
+        _arguments.AddChild(argument);
+        return This;
+    }
 
-	public IEnumerable<CommandNode<TSource>> Arguments => _arguments.Children;
+    public IEnumerable<CommandNode<TSource>> Arguments => _arguments.Children;
 
-	public TThis Executes(Command<TSource> command)
-	{
-		Command = command;
-		return This;
-	}
+    public TThis Executes(Command<TSource> command)
+    {
+        Command = command;
+        return This;
+    }
 
-	public Command<TSource>? Command { get; private set; }
+    public Command<TSource>? Command { get; private set; }
 
-	public TThis Describes(IMessage description)
-	{
-		Description = description;
-		return This;
-	}
+    public TThis Describes(IMessage description)
+    {
+        Description = description;
+        return This;
+    }
 
-	public TThis Describes(string description)
-	{
-		return Describes(new LiteralMessage(description));
-	}
+    public TThis Describes(string description)
+    {
+        return Describes(new LiteralMessage(description));
+    }
 
-	public IMessage? Description { get; private set; }
+    public IMessage? Description { get; private set; }
 
-	public TThis Requires(Predicate<TSource> requirement)
-	{
-		Requirement = requirement;
-		return This;
-	}
+    public TThis Requires(Predicate<TSource> requirement)
+    {
+        Requirement = requirement;
+        return This;
+    }
 
-	public Predicate<TSource> Requirement { get; private set; } = _ => true;
+    public Predicate<TSource> Requirement { get; private set; } = _ => true;
 
-	public TThis Redirect(CommandNode<TSource> target)
-	{
-		return Forward(target, null, false);
-	}
+    public TThis Redirect(CommandNode<TSource> target)
+    {
+        return Forward(target, null, false);
+    }
 
-	public TThis Redirect(CommandNode<TSource> target, SingleRedirectModifier<TSource>? modifier)
-	{
-		return Forward(target, modifier == null ? null: o => [modifier(o)], false);
-	}
+    public TThis Redirect(CommandNode<TSource> target, SingleRedirectModifier<TSource>? modifier)
+    {
+        return Forward(target, modifier == null ? null : o => [modifier(o)], false);
+    }
 
-	public TThis Fork(CommandNode<TSource> target, RedirectModifier<TSource> modifier)
-	{
-		return Forward(target, modifier, true);
-	}
+    public TThis Fork(CommandNode<TSource> target, RedirectModifier<TSource> modifier)
+    {
+        return Forward(target, modifier, true);
+    }
 
-	public TThis Forward(CommandNode<TSource>? target, RedirectModifier<TSource>? modifier, bool fork)
-	{
-		if (_arguments.Children.Count > 0)
-		{
-			throw new InvalidOperationException("Cannot forward a node with children");
-		}
+    public TThis Forward(
+        CommandNode<TSource>? target,
+        RedirectModifier<TSource>? modifier,
+        bool fork
+    )
+    {
+        if (_arguments.Children.Count > 0)
+        {
+            throw new InvalidOperationException("Cannot forward a node with children");
+        }
 
-		RedirectTarget = target;
-		RedirectModifier = modifier;
-		IsFork = fork;
-		return This;
-	}
+        RedirectTarget = target;
+        RedirectModifier = modifier;
+        IsFork = fork;
+        return This;
+    }
 
-	public CommandNode<TSource>? RedirectTarget { get; private set; }
+    public CommandNode<TSource>? RedirectTarget { get; private set; }
 
-	public RedirectModifier<TSource>? RedirectModifier { get; private set; }
+    public RedirectModifier<TSource>? RedirectModifier { get; private set; }
 
-	public bool IsFork { get; private set; }
+    public bool IsFork { get; private set; }
 
-	public abstract TNode Build();
+    public abstract TNode Build();
 }

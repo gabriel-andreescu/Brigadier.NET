@@ -5,152 +5,181 @@ namespace Brigadier.NET.Context;
 [PublicAPI]
 public class CommandContextBuilder<TSource>
 {
-	private readonly Dictionary<string, IParsedArgument> _arguments;
-	private RedirectModifier<TSource>? _modifier;
-	private bool _forks;
+    private readonly Dictionary<string, IParsedArgument> _arguments;
+    private RedirectModifier<TSource>? _modifier;
+    private bool _forks;
 
-	public CommandContextBuilder(CommandDispatcher<TSource> dispatcher, TSource source, CommandNode<TSource> rootNode, int start)
-	{
-		RootNode = rootNode;
-		Dispatcher = dispatcher;
-		Source = source;
-		Range = StringRange.At(start);
-		_arguments = new Dictionary<string, IParsedArgument>();
-		Nodes = [];
-	}
+    public CommandContextBuilder(
+        CommandDispatcher<TSource> dispatcher,
+        TSource source,
+        CommandNode<TSource> rootNode,
+        int start
+    )
+    {
+        RootNode = rootNode;
+        Dispatcher = dispatcher;
+        Source = source;
+        Range = StringRange.At(start);
+        _arguments = new Dictionary<string, IParsedArgument>();
+        Nodes = [];
+    }
 
-	public CommandContextBuilder(CommandDispatcher<TSource> dispatcher, TSource source, CommandNode<TSource> rootNode, StringRange range, IDictionary<string, IParsedArgument> arguments, List<ParsedCommandNode<TSource>> nodes)
-	{
-		Dispatcher = dispatcher;
-		Source = source;
-		RootNode = rootNode;
-		Range = range;
-		_arguments = new Dictionary<string, IParsedArgument>(arguments);
-		Nodes = new List<ParsedCommandNode<TSource>>(nodes);
-	}
+    public CommandContextBuilder(
+        CommandDispatcher<TSource> dispatcher,
+        TSource source,
+        CommandNode<TSource> rootNode,
+        StringRange range,
+        IDictionary<string, IParsedArgument> arguments,
+        List<ParsedCommandNode<TSource>> nodes
+    )
+    {
+        Dispatcher = dispatcher;
+        Source = source;
+        RootNode = rootNode;
+        Range = range;
+        _arguments = new Dictionary<string, IParsedArgument>(arguments);
+        Nodes = new List<ParsedCommandNode<TSource>>(nodes);
+    }
 
-	public CommandContextBuilder<TSource> WithSource(TSource source)
-	{
-		Source = source;
-		return this;
-	}
+    public CommandContextBuilder<TSource> WithSource(TSource source)
+    {
+        Source = source;
+        return this;
+    }
 
-	public TSource Source { get; private set; }
+    public TSource Source { get; private set; }
 
-	public CommandNode<TSource> RootNode { get; }
+    public CommandNode<TSource> RootNode { get; }
 
-	public CommandContextBuilder<TSource> WithArgument(string name, IParsedArgument argument)
-	{
-		_arguments.Add(name, argument);
-		return this;
-	}
+    public CommandContextBuilder<TSource> WithArgument(string name, IParsedArgument argument)
+    {
+        _arguments.Add(name, argument);
+        return this;
+    }
 
-	public IDictionary<string, IParsedArgument> GetArguments()
-	{
-		return _arguments;
-	}
+    public IDictionary<string, IParsedArgument> GetArguments()
+    {
+        return _arguments;
+    }
 
-	public CommandContextBuilder<TSource> WithCommand(Command<TSource>? command)
-	{
-		Command = command;
-		return this;
-	}
+    public CommandContextBuilder<TSource> WithCommand(Command<TSource>? command)
+    {
+        Command = command;
+        return this;
+    }
 
-	public CommandContextBuilder<TSource> WithNode(CommandNode<TSource> node, StringRange range)
-	{
-		Nodes.Add(new ParsedCommandNode<TSource>(node, range));
-		Range = StringRange.Encompassing(Range, range);
-		_modifier = node.RedirectModifier;
-		_forks = node.IsFork;
-		return this;
-	}
+    public CommandContextBuilder<TSource> WithNode(CommandNode<TSource> node, StringRange range)
+    {
+        Nodes.Add(new ParsedCommandNode<TSource>(node, range));
+        Range = StringRange.Encompassing(Range, range);
+        _modifier = node.RedirectModifier;
+        _forks = node.IsFork;
+        return this;
+    }
 
-	public CommandContextBuilder<TSource> Copy()
-	{
-		var copy = new CommandContextBuilder<TSource>(Dispatcher, Source, RootNode, Range, _arguments, Nodes)
-		{
-			Command = Command,
-			Child = Child,
-			_forks = _forks
-		};
-			
-		return copy;
-	}
+    public CommandContextBuilder<TSource> Copy()
+    {
+        var copy = new CommandContextBuilder<TSource>(
+            Dispatcher,
+            Source,
+            RootNode,
+            Range,
+            _arguments,
+            Nodes
+        )
+        {
+            Command = Command,
+            Child = Child,
+            _forks = _forks,
+        };
 
-	public CommandContextBuilder<TSource> WithChild(CommandContextBuilder<TSource> child)
-	{
-		Child = child;
-		return this;
-	}
+        return copy;
+    }
 
-	public CommandContextBuilder<TSource>? Child { get; private set; }
+    public CommandContextBuilder<TSource> WithChild(CommandContextBuilder<TSource> child)
+    {
+        Child = child;
+        return this;
+    }
 
-	public CommandContextBuilder<TSource> LastChild
-	{
-		get
-		{
+    public CommandContextBuilder<TSource>? Child { get; private set; }
+
+    public CommandContextBuilder<TSource> LastChild
+    {
+        get
+        {
             CommandContextBuilder<TSource> result = this;
-			while (result.Child != null)
-			{
-				result = result.Child;
-			}
-			return result;
-		}
-	}
-		
+            while (result.Child != null)
+            {
+                result = result.Child;
+            }
+            return result;
+        }
+    }
 
-	public Command<TSource>? Command { get; private set; }
+    public Command<TSource>? Command { get; private set; }
 
-	public List<ParsedCommandNode<TSource>> Nodes { get; }
+    public List<ParsedCommandNode<TSource>> Nodes { get; }
 
-	public CommandContext<TSource> Build(string input)
-	{
-		return new CommandContext<TSource>(Source, input, _arguments, Command, RootNode, Nodes, Range, Child?.Build(input), _modifier, _forks);
-	}
+    public CommandContext<TSource> Build(string input)
+    {
+        return new CommandContext<TSource>(
+            Source,
+            input,
+            _arguments,
+            Command,
+            RootNode,
+            Nodes,
+            Range,
+            Child?.Build(input),
+            _modifier,
+            _forks
+        );
+    }
 
-	public CommandDispatcher<TSource> Dispatcher { get; }
+    public CommandDispatcher<TSource> Dispatcher { get; }
 
-	public StringRange Range { get; private set; }
+    public StringRange Range { get; private set; }
 
-	public SuggestionContext<TSource> FindSuggestionContext(int cursor)
-	{
-		if (Range.Start <= cursor)
-		{
-			if (Range.End < cursor)
-			{
-				if (Child != null)
-				{
-					return Child.FindSuggestionContext(cursor);
-				}
-				else if (Nodes.Count > 0)
-				{
+    public SuggestionContext<TSource> FindSuggestionContext(int cursor)
+    {
+        if (Range.Start <= cursor)
+        {
+            if (Range.End < cursor)
+            {
+                if (Child != null)
+                {
+                    return Child.FindSuggestionContext(cursor);
+                }
+                else if (Nodes.Count > 0)
+                {
                     ParsedCommandNode<TSource> last = Nodes[^1];
-					return new SuggestionContext<TSource>(last.Node, last.Range.End + 1);
-				}
-				else
-				{
-					return new SuggestionContext<TSource>(RootNode, Range.Start);
-				}
-			}
-			else
-			{
+                    return new SuggestionContext<TSource>(last.Node, last.Range.End + 1);
+                }
+                else
+                {
+                    return new SuggestionContext<TSource>(RootNode, Range.Start);
+                }
+            }
+            else
+            {
                 CommandNode<TSource> prev = RootNode;
-				foreach (ParsedCommandNode<TSource> node in Nodes)
-				{
+                foreach (ParsedCommandNode<TSource> node in Nodes)
+                {
                     StringRange nodeRange = node.Range;
-					if (nodeRange.Start <= cursor && cursor <= nodeRange.End)
-					{
-						return new SuggestionContext<TSource>(prev, nodeRange.Start);
-					}
-					prev = node.Node;
-				}
-				if (prev == null)
-				{
-					throw new InvalidOperationException("Can't find node before cursor");
-				}
-				return new SuggestionContext<TSource>(prev, Range.Start);
-			}
-		}
-		throw new InvalidOperationException("Can't find node before cursor");
-	}
+                    if (nodeRange.Start <= cursor && cursor <= nodeRange.End)
+                    {
+                        return new SuggestionContext<TSource>(prev, nodeRange.Start);
+                    }
+                    prev = node.Node;
+                }
+                if (prev == null)
+                {
+                    throw new InvalidOperationException("Can't find node before cursor");
+                }
+                return new SuggestionContext<TSource>(prev, Range.Start);
+            }
+        }
+        throw new InvalidOperationException("Can't find node before cursor");
+    }
 }

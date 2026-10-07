@@ -3,7 +3,7 @@
 [PublicAPI]
 public enum StringArgType
 {
-	SingleWord,
-	QuotablePhrase,
-	GreedyPhrase
+    SingleWord,
+    QuotablePhrase,
+    GreedyPhrase,
 }

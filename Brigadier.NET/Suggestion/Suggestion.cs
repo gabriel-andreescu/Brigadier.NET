@@ -5,41 +5,41 @@ namespace Brigadier.NET.Suggestion;
 [PublicAPI]
 public class Suggestion : IEquatable<Suggestion>
 {
-	public Suggestion(StringRange range, string text, IMessage? tooltip = null)
-	{
-		Range = range;
-		Text = text;
-		Tooltip = tooltip;
-	}
+    public Suggestion(StringRange range, string text, IMessage? tooltip = null)
+    {
+        Range = range;
+        Text = text;
+        Tooltip = tooltip;
+    }
 
-	public StringRange Range { get; }
+    public StringRange Range { get; }
 
-	public string Text { get; }
+    public string Text { get; }
 
-	public IMessage? Tooltip { get; }
+    public IMessage? Tooltip { get; }
 
-	public string Apply(string input)
-	{
-		if (Range.Start == 0 && Range.End == input.Length)
-		{
-			return Text;
-		}
-		var result = new StringBuilder();
-		if (Range.Start > 0)
-		{
-			result.Append(input, 0, Range.Start);
-		}
-		result.Append(Text);
-		if (Range.End < input.Length)
-		{
-			result.Append(input, Range.End, input.Length - Range.End);
-		}
-		return result.ToString();
-	}
+    public string Apply(string input)
+    {
+        if (Range.Start == 0 && Range.End == input.Length)
+        {
+            return Text;
+        }
+        var result = new StringBuilder();
+        if (Range.Start > 0)
+        {
+            result.Append(input, 0, Range.Start);
+        }
+        result.Append(Text);
+        if (Range.End < input.Length)
+        {
+            result.Append(input, Range.End, input.Length - Range.End);
+        }
+        return result.ToString();
+    }
 
-	public override bool Equals(object? obj)
-	{
-		if (ReferenceEquals(null, obj))
+    public override bool Equals(object? obj)
+    {
+        if (ReferenceEquals(null, obj))
         {
             return false;
         }
@@ -49,13 +49,12 @@ public class Suggestion : IEquatable<Suggestion>
             return true;
         }
 
-        return obj is Suggestion other 
-		       && Equals(other);
-	}
+        return obj is Suggestion other && Equals(other);
+    }
 
-	public bool Equals(Suggestion? other)
-	{
-		if (ReferenceEquals(null, other))
+    public bool Equals(Suggestion? other)
+    {
+        if (ReferenceEquals(null, other))
         {
             return false;
         }
@@ -65,48 +64,48 @@ public class Suggestion : IEquatable<Suggestion>
             return true;
         }
 
-        return Equals(Range, other.Range) 
-		       && string.Equals(Text, other.Text, StringComparison.Ordinal)
-		       && Equals(Tooltip, other.Tooltip);
-	}
+        return Equals(Range, other.Range)
+            && string.Equals(Text, other.Text, StringComparison.Ordinal)
+            && Equals(Tooltip, other.Tooltip);
+    }
 
-	public override int GetHashCode()
-	{
-		return HashCode.Combine(Range, Text, Tooltip);
-	}
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Range, Text, Tooltip);
+    }
 
-	public override string ToString()
-	{
-		return $"Suggestion{{range={Range}, text='{Text}', tooltip='{Tooltip}}}";
-	}
+    public override string ToString()
+    {
+        return $"Suggestion{{range={Range}, text='{Text}', tooltip='{Tooltip}}}";
+    }
 
-	public virtual int CompareTo(Suggestion? o)
-	{
-		return String.Compare(Text, o?.Text, StringComparison.Ordinal);
-	}
+    public virtual int CompareTo(Suggestion? o)
+    {
+        return String.Compare(Text, o?.Text, StringComparison.Ordinal);
+    }
 
-	public virtual int CompareToIgnoreCase(Suggestion b)
-	{
-		return string.Compare(Text, b.Text, StringComparison.OrdinalIgnoreCase);
-	}
+    public virtual int CompareToIgnoreCase(Suggestion b)
+    {
+        return string.Compare(Text, b.Text, StringComparison.OrdinalIgnoreCase);
+    }
 
-	public Suggestion Expand(string command, StringRange range)
-	{
-		if (range.Equals(Range))
-		{
-			return this;
-		}
+    public Suggestion Expand(string command, StringRange range)
+    {
+        if (range.Equals(Range))
+        {
+            return this;
+        }
 
-		var result = new StringBuilder();
-		if (range.Start < Range.Start)
-		{
-			result.Append(command, range.Start, Range.Start - range.Start);
-		}
-		result.Append(Text);
-		if (range.End > Range.End)
-		{
-			result.Append(command, Range.End, range.End - Range.End);
-		}
-		return new Suggestion(range, result.ToString(), Tooltip);
-	}
+        var result = new StringBuilder();
+        if (range.Start < Range.Start)
+        {
+            result.Append(command, range.Start, Range.Start - range.Start);
+        }
+        result.Append(Text);
+        if (range.End > Range.End)
+        {
+            result.Append(command, Range.End, range.End - Range.End);
+        }
+        return new Suggestion(range, result.ToString(), Tooltip);
+    }
 }

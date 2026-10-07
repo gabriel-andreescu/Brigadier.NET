@@ -10,46 +10,51 @@ using Xunit;
 
 namespace Brigadier.NET.Tests.builder;
 
-public class RequiredArgumentBuilderTest {
-	private readonly IArgumentType<int> _type = Substitute.For<IArgumentType<int>>();
-	private readonly RequiredArgumentBuilder<object, int> _builder;
-	private readonly Command<object> _command = Substitute.For<Command<object>>();
+public class RequiredArgumentBuilderTest
+{
+    private readonly IArgumentType<int> _type = Substitute.For<IArgumentType<int>>();
+    private readonly RequiredArgumentBuilder<object, int> _builder;
+    private readonly Command<object> _command = Substitute.For<Command<object>>();
 
-	public RequiredArgumentBuilderTest()
-	{
-		_builder = new RequiredArgumentBuilder<object, int>("foo", _type);
-	}
+    public RequiredArgumentBuilderTest()
+    {
+        _builder = new RequiredArgumentBuilder<object, int>("foo", _type);
+    }
 
-	[Fact]
-	public void TestBuild(){
+    [Fact]
+    public void TestBuild()
+    {
         ArgumentCommandNode<object, int> node = _builder.Build();
 
-		node.Name.Should().Be("foo");
-		node.Type.Should().Be(_type);
-	}
+        node.Name.Should().Be("foo");
+        node.Type.Should().Be(_type);
+    }
 
-	[Fact]
-	public void TestBuildWithDescription(){
+    [Fact]
+    public void TestBuildWithDescription()
+    {
         ArgumentCommandNode<object, int> node = _builder.Describes("A number of foos.").Build();
 
-		node.Description!.String.Should().Be("A number of foos.");
-	}
+        node.Description!.String.Should().Be("A number of foos.");
+    }
 
-	[Fact]
-	public void TestBuildWithExecutor(){
+    [Fact]
+    public void TestBuildWithExecutor()
+    {
         ArgumentCommandNode<object, int> node = _builder.Executes(_command).Build();
 
-		node.Name.Should().Be("foo");
-		node.Type.Should().Be(_type);
-		node.Command.Should().Be(_command);
-	}
+        node.Name.Should().Be("foo");
+        node.Type.Should().Be(_type);
+        node.Command.Should().Be(_command);
+    }
 
-	[Fact]
-	public void TestBuildWithChildren(){
-		_builder.Then(r => r.Argument("bar", Arguments.Integer()));
-		_builder.Then(r => r.Argument("baz", Arguments.Integer()));
+    [Fact]
+    public void TestBuildWithChildren()
+    {
+        _builder.Then(r => r.Argument("bar", Arguments.Integer()));
+        _builder.Then(r => r.Argument("baz", Arguments.Integer()));
         ArgumentCommandNode<object, int> node = _builder.Build();
 
-		node.Children.Should().HaveCount(2);
-	}
+        node.Children.Should().HaveCount(2);
+    }
 }

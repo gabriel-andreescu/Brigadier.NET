@@ -7,19 +7,31 @@ using Xunit;
 
 namespace Brigadier.NET.Tests.context;
 
-public class ParsedArgumentTest {
-	[Fact]
-	public void TestEquals(){
-		new EqualsTester()
-			.AddEqualityGroup(new ParsedArgument<object, string>(0, 3, "bar"), new ParsedArgument<object, string>(0, 3, "bar"))
-			.AddEqualityGroup(new ParsedArgument<object, string>(3, 6, "baz"), new ParsedArgument<object, string>(3, 6, "baz"))
-			.AddEqualityGroup(new ParsedArgument<object, string>(6, 9, "baz"), new ParsedArgument<object, string>(6, 9, "baz"));
-	}
+public class ParsedArgumentTest
+{
+    [Fact]
+    public void TestEquals()
+    {
+        new EqualsTester()
+            .AddEqualityGroup(
+                new ParsedArgument<object, string>(0, 3, "bar"),
+                new ParsedArgument<object, string>(0, 3, "bar")
+            )
+            .AddEqualityGroup(
+                new ParsedArgument<object, string>(3, 6, "baz"),
+                new ParsedArgument<object, string>(3, 6, "baz")
+            )
+            .AddEqualityGroup(
+                new ParsedArgument<object, string>(6, 9, "baz"),
+                new ParsedArgument<object, string>(6, 9, "baz")
+            );
+    }
 
-	[Fact]
-	public void GetRaw(){
-		var reader = new StringReader("0123456789");
-		var argument = new ParsedArgument<object, string>(2, 5, "");
-		argument.Range.Get(reader).Should().BeEquivalentTo("234");
-	}
+    [Fact]
+    public void GetRaw()
+    {
+        var reader = new StringReader("0123456789");
+        var argument = new ParsedArgument<object, string>(2, 5, "");
+        argument.Range.Get(reader).Should().BeEquivalentTo("234");
+    }
 }

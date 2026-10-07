@@ -10,63 +10,159 @@ using Xunit;
 
 namespace Brigadier.NET.Tests.context;
 
-public class CommandContextTest {
-	private readonly CommandContextBuilder<object> _builder;
-	private readonly object _source = Substitute.For<object>();
-	private readonly CommandDispatcher<object> _dispatcher = Substitute.For<CommandDispatcher<object>>();
-	private readonly CommandNode<object> _rootNode = Substitute.For<CommandNode<object>>(null, null, null, null, false);
+public class CommandContextTest
+{
+    private readonly CommandContextBuilder<object> _builder;
+    private readonly object _source = Substitute.For<object>();
+    private readonly CommandDispatcher<object> _dispatcher = Substitute.For<
+        CommandDispatcher<object>
+    >();
+    private readonly CommandNode<object> _rootNode = Substitute.For<CommandNode<object>>(
+        null,
+        null,
+        null,
+        null,
+        false
+    );
 
-	public CommandContextTest()
-	{
-		_builder = new CommandContextBuilder<object>(_dispatcher, _source, _rootNode, 0);
-	}
+    public CommandContextTest()
+    {
+        _builder = new CommandContextBuilder<object>(_dispatcher, _source, _rootNode, 0);
+    }
 
-	[Fact]
-	public void testGetArgumentNonexistent(){
-		_builder.Build("").Invoking(b => b.GetArgument<object>("foo"))
-			.Should().Throw<InvalidOperationException>();
-	}
+    [Fact]
+    public void testGetArgumentNonexistent()
+    {
+        _builder
+            .Build("")
+            .Invoking(b => b.GetArgument<object>("foo"))
+            .Should()
+            .Throw<InvalidOperationException>();
+    }
 
-	[Fact]
-	public void testGetArgumentWrongType(){
-        CommandContext<object> context = _builder.WithArgument("foo", new ParsedArgument<object, int>(0, 1, 123)).Build("123");
-		context.Invoking(c => c.GetArgument<string>("foo"))
-			.Should().Throw<InvalidOperationException>();
-	}
+    [Fact]
+    public void testGetArgumentWrongType()
+    {
+        CommandContext<object> context = _builder
+            .WithArgument("foo", new ParsedArgument<object, int>(0, 1, 123))
+            .Build("123");
+        context
+            .Invoking(c => c.GetArgument<string>("foo"))
+            .Should()
+            .Throw<InvalidOperationException>();
+    }
 
-	[Fact]
-	public void TestGetArgument(){
-        CommandContext<object> context = _builder.WithArgument("foo", new ParsedArgument<object, int>(0, 1, 123)).Build("123");
-		context.GetArgument<int>("foo").Should().Be(123);
-	}
+    [Fact]
+    public void TestGetArgument()
+    {
+        CommandContext<object> context = _builder
+            .WithArgument("foo", new ParsedArgument<object, int>(0, 1, 123))
+            .Build("123");
+        context.GetArgument<int>("foo").Should().Be(123);
+    }
 
-	[Fact]
-	public void TestSource(){
-		_builder.Build("").Source.Should().Be(_source);
-	}
+    [Fact]
+    public void TestSource()
+    {
+        _builder.Build("").Source.Should().Be(_source);
+    }
 
-	[Fact]
-	public void TestRootNode(){
-		_builder.Build("").RootNode.Should().Be(_rootNode);
-	}
+    [Fact]
+    public void TestRootNode()
+    {
+        _builder.Build("").RootNode.Should().Be(_rootNode);
+    }
 
-	[Fact]
-	public void TestEquals(){
+    [Fact]
+    public void TestEquals()
+    {
         object otherSource = new object();
         Command<object> command = Substitute.For<Command<object>>();
         Command<object> otherCommand = Substitute.For<Command<object>>();
-        CommandNode<object> rootNode = Substitute.For<CommandNode<object>>(null, null, null, null, false);
-        CommandNode<object> otherRootNode = Substitute.For<CommandNode<object>>(null, null, null, null, false);
-        CommandNode<object> node = Substitute.For<CommandNode<object>>(null, null, null, null, false);
-        CommandNode<object> otherNode = Substitute.For<CommandNode<object>>(null, null, null, null, false);
-		new EqualsTester()
-			.AddEqualityGroup(new CommandContextBuilder<object>(_dispatcher, _source, rootNode, 0).Build(""), new CommandContextBuilder<object>(_dispatcher, _source, rootNode, 0).Build(""))
-			.AddEqualityGroup(new CommandContextBuilder<object>(_dispatcher, _source, otherRootNode, 0).Build(""), new CommandContextBuilder<object>(_dispatcher, _source, otherRootNode, 0).Build(""))
-			.AddEqualityGroup(new CommandContextBuilder<object>(_dispatcher, otherSource, rootNode, 0).Build(""), new CommandContextBuilder<object>(_dispatcher, otherSource, rootNode, 0).Build(""))
-			.AddEqualityGroup(new CommandContextBuilder<object>(_dispatcher, _source, rootNode, 0).WithCommand(command).Build(""), new CommandContextBuilder<object>(_dispatcher, _source, rootNode, 0).WithCommand(command).Build(""))
-			.AddEqualityGroup(new CommandContextBuilder<object>(_dispatcher, _source, rootNode, 0).WithCommand(otherCommand).Build(""), new CommandContextBuilder<object>(_dispatcher, _source, rootNode, 0).WithCommand(otherCommand).Build(""))
-			.AddEqualityGroup(new CommandContextBuilder<object>(_dispatcher, _source, rootNode, 0).WithArgument("foo", new ParsedArgument<object, int>(0, 1, 123)).Build("123"), new CommandContextBuilder<object>(_dispatcher, _source, rootNode, 0).WithArgument("foo", new ParsedArgument<object, int>(0, 1, 123)).Build("123"))
-			.AddEqualityGroup(new CommandContextBuilder<object>(_dispatcher, _source, rootNode, 0).WithNode(node, StringRange.Between(0, 3)).WithNode(otherNode, StringRange.Between(4, 6)).Build("123 456"), new CommandContextBuilder<object>(_dispatcher, _source, rootNode, 0).WithNode(node, StringRange.Between(0, 3)).WithNode(otherNode, StringRange.Between(4, 6)).Build("123 456"))
-			.AddEqualityGroup(new CommandContextBuilder<object>(_dispatcher, _source, rootNode, 0).WithNode(otherNode, StringRange.Between(0, 3)).WithNode(node, StringRange.Between(4, 6)).Build("123 456"), new CommandContextBuilder<object>(_dispatcher, _source, rootNode, 0).WithNode(otherNode, StringRange.Between(0, 3)).WithNode(node, StringRange.Between(4, 6)).Build("123 456"));
-	}
+        CommandNode<object> rootNode = Substitute.For<CommandNode<object>>(
+            null,
+            null,
+            null,
+            null,
+            false
+        );
+        CommandNode<object> otherRootNode = Substitute.For<CommandNode<object>>(
+            null,
+            null,
+            null,
+            null,
+            false
+        );
+        CommandNode<object> node = Substitute.For<CommandNode<object>>(
+            null,
+            null,
+            null,
+            null,
+            false
+        );
+        CommandNode<object> otherNode = Substitute.For<CommandNode<object>>(
+            null,
+            null,
+            null,
+            null,
+            false
+        );
+        new EqualsTester()
+            .AddEqualityGroup(
+                new CommandContextBuilder<object>(_dispatcher, _source, rootNode, 0).Build(""),
+                new CommandContextBuilder<object>(_dispatcher, _source, rootNode, 0).Build("")
+            )
+            .AddEqualityGroup(
+                new CommandContextBuilder<object>(_dispatcher, _source, otherRootNode, 0).Build(""),
+                new CommandContextBuilder<object>(_dispatcher, _source, otherRootNode, 0).Build("")
+            )
+            .AddEqualityGroup(
+                new CommandContextBuilder<object>(_dispatcher, otherSource, rootNode, 0).Build(""),
+                new CommandContextBuilder<object>(_dispatcher, otherSource, rootNode, 0).Build("")
+            )
+            .AddEqualityGroup(
+                new CommandContextBuilder<object>(_dispatcher, _source, rootNode, 0)
+                    .WithCommand(command)
+                    .Build(""),
+                new CommandContextBuilder<object>(_dispatcher, _source, rootNode, 0)
+                    .WithCommand(command)
+                    .Build("")
+            )
+            .AddEqualityGroup(
+                new CommandContextBuilder<object>(_dispatcher, _source, rootNode, 0)
+                    .WithCommand(otherCommand)
+                    .Build(""),
+                new CommandContextBuilder<object>(_dispatcher, _source, rootNode, 0)
+                    .WithCommand(otherCommand)
+                    .Build("")
+            )
+            .AddEqualityGroup(
+                new CommandContextBuilder<object>(_dispatcher, _source, rootNode, 0)
+                    .WithArgument("foo", new ParsedArgument<object, int>(0, 1, 123))
+                    .Build("123"),
+                new CommandContextBuilder<object>(_dispatcher, _source, rootNode, 0)
+                    .WithArgument("foo", new ParsedArgument<object, int>(0, 1, 123))
+                    .Build("123")
+            )
+            .AddEqualityGroup(
+                new CommandContextBuilder<object>(_dispatcher, _source, rootNode, 0)
+                    .WithNode(node, StringRange.Between(0, 3))
+                    .WithNode(otherNode, StringRange.Between(4, 6))
+                    .Build("123 456"),
+                new CommandContextBuilder<object>(_dispatcher, _source, rootNode, 0)
+                    .WithNode(node, StringRange.Between(0, 3))
+                    .WithNode(otherNode, StringRange.Between(4, 6))
+                    .Build("123 456")
+            )
+            .AddEqualityGroup(
+                new CommandContextBuilder<object>(_dispatcher, _source, rootNode, 0)
+                    .WithNode(otherNode, StringRange.Between(0, 3))
+                    .WithNode(node, StringRange.Between(4, 6))
+                    .Build("123 456"),
+                new CommandContextBuilder<object>(_dispatcher, _source, rootNode, 0)
+                    .WithNode(otherNode, StringRange.Between(0, 3))
+                    .WithNode(node, StringRange.Between(4, 6))
+                    .Build("123 456")
+            );
+    }
 }

@@ -11,13 +11,15 @@ namespace Brigadier.NET.Benchmarks;
 
 [MarkdownExporterAttribute.GitHub]
 [MemoryDiagnoser]
-public class ParsingBenchmarks {
+public class ParsingBenchmarks
+{
     private CommandDispatcher<object> subject = null!;
 
     [GlobalSetup]
-    public void setup() {
+    public void setup()
+    {
         subject = new CommandDispatcher<object>();
-        subject.Register(r => 
+        subject.Register(r =>
             r.Literal("a")
                 .Then(
                     r.Literal("1")
@@ -33,7 +35,7 @@ public class ParsingBenchmarks {
         subject.Register(r => r.Literal("b").Then(r.Literal("1").Executes(c => 0)));
         subject.Register(r => r.Literal("c").Executes(c => 0));
         subject.Register(r => r.Literal("d").Requires(s => false).Executes(c => 0));
-        subject.Register(r => 
+        subject.Register(r =>
             r.Literal("e")
                 .Executes(c => 0)
                 .Then(
@@ -43,7 +45,7 @@ public class ParsingBenchmarks {
                         .Then(r.Literal("ii").Executes(c => 0))
                 )
         );
-        subject.Register(r => 
+        subject.Register(r =>
             r.Literal("f")
                 .Then(
                     r.Literal("1")
@@ -56,46 +58,43 @@ public class ParsingBenchmarks {
                         .Then(r.Literal("ii").Executes(c => 0))
                 )
         );
-        subject.Register(r => 
+        subject.Register(r =>
             r.Literal("g")
                 .Executes(c => 0)
                 .Then(r.Literal("1").Then(r.Literal("i").Executes(c => 0)))
         );
-        LiteralCommandNode<Object> h = subject.Register(r => 
+        LiteralCommandNode<Object> h = subject.Register(r =>
             r.Literal("h")
                 .Executes(c => 0)
                 .Then(r.Literal("1").Then(r.Literal("i").Executes(c => 0)))
                 .Then(r.Literal("2").Then(r.Literal("i").Then(r.Literal("ii").Executes(c => 0))))
                 .Then(r.Literal("3").Executes(c => 0))
         );
-        subject.Register(r => 
+        subject.Register(r =>
             r.Literal("i")
                 .Executes(c => 0)
                 .Then(r.Literal("1").Executes(c => 0))
                 .Then(r.Literal("2").Executes(c => 0))
         );
-        subject.Register(r => 
-            r.Literal("j")
-                .Redirect(subject.Root)
-        );
-        subject.Register(r => 
-            r.Literal("k")
-                .Redirect(h)
-        );
+        subject.Register(r => r.Literal("j").Redirect(subject.Root));
+        subject.Register(r => r.Literal("k").Redirect(h));
     }
 
     [Benchmark]
-	public void parseA1i() {
+    public void parseA1i()
+    {
         subject.Parse("a 1 i", new Object());
     }
 
     [Benchmark]
-	public void parseC() {
+    public void parseC()
+    {
         subject.Parse("c", new Object());
     }
 
     [Benchmark]
-	public void parseK1i() {
+    public void parseK1i()
+    {
         subject.Parse("k 1 i", new Object());
     }
 }

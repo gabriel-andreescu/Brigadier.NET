@@ -7,48 +7,63 @@ namespace Brigadier.NET.Builder;
 [PublicAPI]
 public static class RequiredArgumentBuilderExtensions
 {
-	// ReSharper disable once UnusedParameter.Global
-	// context is used to infer generic parameters in API
-	public static RequiredArgumentBuilder<TSource, T> Argument<TSource, T>(this IArgumentContext<TSource> context, string name, IArgumentType<T> type) where T : notnull
-	{
-		return new RequiredArgumentBuilder<TSource, T>(name, type);
-	}
+    // ReSharper disable once UnusedParameter.Global
+    // context is used to infer generic parameters in API
+    public static RequiredArgumentBuilder<TSource, T> Argument<TSource, T>(
+        this IArgumentContext<TSource> context,
+        string name,
+        IArgumentType<T> type
+    )
+        where T : notnull
+    {
+        return new RequiredArgumentBuilder<TSource, T>(name, type);
+    }
 }
 
 [PublicAPI]
-public class RequiredArgumentBuilder<TSource, T> : ArgumentBuilder<TSource, RequiredArgumentBuilder<TSource, T>, ArgumentCommandNode<TSource, T>> where T : notnull
+public class RequiredArgumentBuilder<TSource, T>
+    : ArgumentBuilder<TSource, RequiredArgumentBuilder<TSource, T>, ArgumentCommandNode<TSource, T>>
+    where T : notnull
 {
-	private SuggestionProvider<TSource>? _suggestionsProvider;
+    private SuggestionProvider<TSource>? _suggestionsProvider;
 
-	public RequiredArgumentBuilder(string name, IArgumentType<T> type)
-	{
-		Name = name;
-		Type = type;
-	}
+    public RequiredArgumentBuilder(string name, IArgumentType<T> type)
+    {
+        Name = name;
+        Type = type;
+    }
 
-	public RequiredArgumentBuilder<TSource, T> Suggests(SuggestionProvider<TSource>? provider)
-	{
-		_suggestionsProvider = provider;
-		return This;
-	}
+    public RequiredArgumentBuilder<TSource, T> Suggests(SuggestionProvider<TSource>? provider)
+    {
+        _suggestionsProvider = provider;
+        return This;
+    }
 
-	public IArgumentType<T> Type { get; }
+    public IArgumentType<T> Type { get; }
 
-	public string Name { get; }
+    public string Name { get; }
 
-	public override ArgumentCommandNode<TSource, T> Build()
-	{
-		var result = new ArgumentCommandNode<TSource, T>(Name, Type, Command, Requirement, RedirectTarget, RedirectModifier, IsFork, _suggestionsProvider)
-		{
-			Description = Description
-		};
+    public override ArgumentCommandNode<TSource, T> Build()
+    {
+        var result = new ArgumentCommandNode<TSource, T>(
+            Name,
+            Type,
+            Command,
+            Requirement,
+            RedirectTarget,
+            RedirectModifier,
+            IsFork,
+            _suggestionsProvider
+        )
+        {
+            Description = Description,
+        };
 
-		foreach (CommandNode<TSource> argument in Arguments)
-		{
-			result.AddChild(argument);
-		}
+        foreach (CommandNode<TSource> argument in Arguments)
+        {
+            result.AddChild(argument);
+        }
 
-		return result;
-	}
-
+        return result;
+    }
 }
