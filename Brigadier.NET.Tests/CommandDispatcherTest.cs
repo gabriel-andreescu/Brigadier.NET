@@ -64,6 +64,52 @@ public class CommandDispatcherTest
     }
 
     [Fact]
+    public void TestReplaceCommand()
+    {
+        Command<object> replacement = Substitute.For<Command<object>>();
+        replacement.Invoke(Arg.Any<CommandContext<object>>()).Returns(7);
+        _subject.Register(r => r.Literal("base").Then(r.Literal("old").Executes(_command)));
+        _subject.Replace(
+            new LiteralArgumentBuilder<object>("base").Then(
+                new LiteralArgumentBuilder<object>("new").Executes(replacement)
+            )
+        );
+
+        _subject.Execute("base new", _source).Should().Be(7);
+        _subject
+            .Invoking(s => s.Execute("base old", _source))
+            .Should()
+            .Throw<CommandSyntaxException>();
+    }
+
+    [Fact]
+    public void TestReplaceCommandKeepsRedirects()
+    {
+        Command<object> replacement = Substitute.For<Command<object>>();
+        replacement.Invoke(Arg.Any<CommandContext<object>>()).Returns(7);
+        LiteralCommandNode<object> original = _subject.Register(r =>
+            r.Literal("actual").Then(r.Literal("old").Executes(_command))
+        );
+        _subject.Register(r => r.Literal("alias").Redirect(original));
+        LiteralCommandNode<object> replaced = _subject.Replace(
+            new LiteralArgumentBuilder<object>("actual").Then(
+                new LiteralArgumentBuilder<object>("new").Executes(replacement)
+            )
+        );
+
+        replaced.Should().BeSameAs(original);
+        _subject.Execute("alias new", _source).Should().Be(7);
+    }
+
+    [Fact]
+    public void TestReplaceAddsMissingCommand()
+    {
+        _subject.Replace(new LiteralArgumentBuilder<object>("foo").Executes(_command));
+
+        _subject.Execute("foo", _source).Should().Be(42);
+    }
+
+    [Fact]
     public void TestExecuteArgumentParseFailureKeepsCause()
     {
         var failure = new InvalidOperationException("broken");

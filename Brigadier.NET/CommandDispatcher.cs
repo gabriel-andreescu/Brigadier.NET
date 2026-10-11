@@ -87,6 +87,14 @@ public class CommandDispatcher<TSource>
         return build;
     }
 
+    /// <summary>
+    /// Registers <paramref name="command"/> in place of any command with its name, instead of
+    /// merging into it. Nodes that redirect to the replaced command reach the replacement.
+    /// </summary>
+    /// <returns>The node now in this tree under the command's name.</returns>
+    public LiteralCommandNode<TSource> Replace(LiteralArgumentBuilder<TSource> command) =>
+        (LiteralCommandNode<TSource>)_root.ReplaceChild(command.Build());
+
     /// <summary>Parses and executes a given command.</summary>
     ///
     /// <remarks>

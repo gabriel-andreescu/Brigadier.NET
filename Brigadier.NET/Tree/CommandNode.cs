@@ -44,9 +44,9 @@ public abstract class CommandNode<TSource> : IEnumerable<CommandNode<TSource>>
         return _children.TryGetValue(name, out CommandNode<TSource>? node) ? node : null;
     }
 
-    public CommandNode<TSource>? Redirect { get; }
+    public CommandNode<TSource>? Redirect { get; private set; }
 
-    public RedirectModifier<TSource>? RedirectModifier { get; }
+    public RedirectModifier<TSource>? RedirectModifier { get; private set; }
 
     public bool CanUse(TSource source)
     {
@@ -115,6 +115,55 @@ public abstract class CommandNode<TSource> : IEnumerable<CommandNode<TSource>>
         }
     }
 
+    /// <summary>
+    /// Replaces the child with <paramref name="node"/>'s name instead of merging into it, as
+    /// <see cref="AddChild"/> does. A literal child takes over <paramref name="node"/>'s command,
+    /// requirement, redirect, description and children in place, so nodes that redirect to it
+    /// reach the replacement. Any other child is removed and <paramref name="node"/> added.
+    /// </summary>
+    /// <returns>The node now in the tree under that name.</returns>
+    public CommandNode<TSource> ReplaceChild(CommandNode<TSource> node)
+    {
+        if (!_children.TryGetValue(node.Name, out CommandNode<TSource>? child))
+        {
+            AddChild(node);
+            return node;
+        }
+
+        if (
+            child is LiteralCommandNode<TSource>
+            && node is LiteralCommandNode<TSource>
+            && child != node
+        )
+        {
+            child.TakeOver(node);
+            return child;
+        }
+
+        _children.Remove(node.Name);
+        _literals.Remove(node.Name);
+        _arguments.Remove(node.Name);
+        AddChild(node);
+        return node;
+    }
+
+    private void TakeOver(CommandNode<TSource> node)
+    {
+        Command = node.Command;
+        Description = node.Description;
+        Requirement = node.Requirement;
+        Redirect = node.Redirect;
+        RedirectModifier = node.RedirectModifier;
+        IsFork = node.IsFork;
+        _children.Clear();
+        _literals.Clear();
+        _arguments.Clear();
+        foreach (CommandNode<TSource> child in node.Children)
+        {
+            AddChild(child);
+        }
+    }
+
     public void FindAmbiguities(AmbiguityConsumer<TSource> consumer)
     {
         var matches = new HashSet<string>();
@@ -149,7 +198,7 @@ public abstract class CommandNode<TSource> : IEnumerable<CommandNode<TSource>>
 
     protected abstract bool IsValidInput(string input);
 
-    public Predicate<TSource> Requirement { get; }
+    public Predicate<TSource> Requirement { get; private set; }
 
     public abstract string Name { get; }
 
@@ -198,7 +247,7 @@ public abstract class CommandNode<TSource> : IEnumerable<CommandNode<TSource>>
         }
     }
 
-    public bool IsFork { get; }
+    public bool IsFork { get; private set; }
 
     public abstract IEnumerable<string> Examples { get; }
 
